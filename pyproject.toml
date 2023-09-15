@@ -1,0 +1,78 @@
+[tool.poetry]
+name = "vicare-automation-server"
+version = "0.1.0"
+description = "A lightwight fast api server, in order to access and manipulate ViCare products"
+license = "MIT"
+authors = ["Andreas Schmid <service@aaschmid.de>"]
+readme = "readme.md"
+homepage = "https://github.com/aaschmid/vicare-automation-server"
+repository = "https://github.com/aaschmid/vicare-automation-server"
+packages = [
+  { include = "vicare_automation_server" }
+]
+include = ["LICENSE"]
+keywords = ["packaging", "dependency", "poetry"]
+classifiers = [
+  "Topic :: Home Automation",
+  "Topic :: System :: Monitoring",
+]
+
+[tool.poetry.urls]
+"Changelog" = "https://github.com/aaschmid/vicare-automation-server/releases"
+"Bug Tracker" = "https://github.com/aaschmid/vicare-automation-server/issues"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.103.1"
+uvicorn = "^0.23.2"
+pydantic-settings = "^2.0.3"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.9.1"
+httpx = "^0.25.0"
+isort = "^5.12.0"
+mypy = "^1.5.1"
+pytest = "^7.4.2"
+pytest-cov = "^4.1.0"
+ruff = "^0.0.289"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+
+[tool.pytest.ini_options]
+addopts = "--cov=app --cov-report term"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+
+[tool.ruff]
+extend-select = ["B", "Q"]
+ignore = []
+
+# Same as Black.
+line-length = 120
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+target-version = "py312"
+
+[tool.ruff.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends", "fastapi.Query", "fastapi.params.Query"]
+
+[tool.ruff.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
