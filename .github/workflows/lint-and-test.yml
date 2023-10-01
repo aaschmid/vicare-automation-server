@@ -1,0 +1,37 @@
+name: lint-and-test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      # Setup
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up python
+        id: setup-python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.0-rc.3'
+          cache: 'poetry'
+      - name: Install project
+        run: poetry install --no-interaction --no-root
+
+      # Lint
+      - name: Run black
+        run: poetry run black --check app/
+      - name: Run isort
+        run: poetry run isort --check --diff app/
+      - name: Run ruff
+        run: poetry run ruff check app/
+
+      # Test
+      - name: Run tests
+        run: |
+          poetry run pytest
