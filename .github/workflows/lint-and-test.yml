@@ -34,4 +34,4 @@ jobs:
       # Test
       - name: Run tests
         run: |
-          poetry run pytest
+          poetry run pytest --cov=app --cov-report term

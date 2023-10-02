@@ -52,7 +52,6 @@ profile = "black"
 skip_gitignore = true
 
 [tool.pytest.ini_options]
-addopts = "--cov=app --cov-report term"
 testpaths = ["tests"]
 
 [tool.coverage.run]
