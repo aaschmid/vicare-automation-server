@@ -1,0 +1,35 @@
+name: dockerimages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  dockermages:
+    runs-on: ubuntu-latest
+    steps:
+      # Setup
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Buildx arm64 image
+        run: |
+          docker buildx build \
+          --no-cache \
+          --output type=docker \
+          --platform arm64 \
+          --tag vicare-automation-server \
+          .
+
+      - name: Save arm64 image
+        run: |
+          docker save vicare-automation-server > vicare-automation-server-arm64.tar
+
+      - name: Store Docker images
+        uses: actions/upload-artifact@v4
+        with:
+          path: vicare-automation-server-*
