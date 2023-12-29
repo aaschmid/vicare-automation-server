@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, Path
 from PyViCare import PyViCareDeviceConfig, PyViCareVentilationDevice
 from PyViCare.PyViCare import PyViCare
+from starlette import status
 
 from app import dependencies
 
@@ -34,6 +37,23 @@ def get_ventilation(device: PyViCareDeviceConfig = Depends(get_single_ventilatio
 @router.get("/mode")
 def get_mode(ventilation: PyViCareVentilationDevice = Depends(get_single_ventilation)) -> str:
     return ventilation.getActiveMode()
+
+
+@router.put("/mode/permanent/{level}", status_code=status.HTTP_204_NO_CONTENT)
+def set_mode_permanent(
+    level: Annotated[int, Path(title="The ventilation level in percent", ge=0, le=100)],
+    ventilation: PyViCareVentilationDevice = Depends(get_single_ventilation),
+):
+    if 0 <= level <= 25:
+        ventilation.setPermanentLevel("levelOne")
+    elif 25 < level <= 50:
+        ventilation.setPermanentLevel("levelTwo")
+    elif 50 < level <= 75:
+        ventilation.setPermanentLevel("levelThree")
+    elif 75 < level <= 100:
+        ventilation.setPermanentLevel("levelFour")
+    else:
+        raise HTTPException(status_code=404, detail="Unknown level")
 
 
 @router.get("/program")
