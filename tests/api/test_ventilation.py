@@ -13,9 +13,31 @@ client = TestClient(app)
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_ventilation_should_return_meta_information_on_root(dependency_mocker):
+    property_map = {
+        "device.messages.errors.raw": {"properties": {"entries": {"value": ["error 1"]}}},
+        "device.productIdentification": {"properties": {"product": {"value": "pId1"}}},
+        "ventilation.operating.modes.filterChange": {"properties": {"active": {"value": False}}},
+        "ventilation.operating.programs.levelOne": {
+            "properties": {"active": {"value": False}, "volumeFlow": {"value": 10, "unit": "m³/h"}}
+        },
+        "ventilation.operating.programs.levelTwo": {
+            "properties": {"active": {"value": True}, "volumeFlow": {"value": 20, "unit": "m³/h"}}
+        },
+        "ventilation.operating.programs.levelThree": {
+            "properties": {"active": {"value": False}, "volumeFlow": {"value": 30, "unit": "m³/h"}}
+        },
+        "ventilation.operating.programs.levelFour": {
+            "properties": {"active": {"value": False}, "volumeFlow": {"value": 40, "unit": "m³/h"}}
+        },
+    }
     dependency_mocker.devices = [
         PyViCareDeviceConfig(
-            Mock(roles=["type:ventilation"], accessor=Mock(serial="test_serial")), 1234, "test_device", "online"
+            Mock(
+                roles=["type:ventilation"], accessor=Mock(serial="test_serial"), getProperty=lambda p: property_map[p]
+            ),
+            1234,
+            "test_device",
+            "online",
         )
     ]
 
@@ -23,9 +45,20 @@ def test_ventilation_should_return_meta_information_on_root(dependency_mocker):
 
     assert response.status_code == 200
     assert response.json() == {
-        "deviceId": 1234,
-        "model": "test_device",
-        "serial": "test_serial",
+        "device": {
+            "deviceId": 1234,
+            "model": "test_device",
+            "productIdentification": "pId1",
+            "serial": "test_serial",
+        },
+        "errors": ["error 1"],
+        "filterChange": False,
+        "levels": {
+            "four": {"active": False, "volumeFlow": "40 m³/h"},
+            "one": {"active": False, "volumeFlow": "10 m³/h"},
+            "three": {"active": False, "volumeFlow": "30 m³/h"},
+            "two": {"active": True, "volumeFlow": "20 m³/h"},
+        },
         "status": "online",
     }
 
