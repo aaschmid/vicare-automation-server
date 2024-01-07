@@ -26,10 +26,31 @@ def get_single_ventilation(vicare: PyViCare = Depends(dependencies.get_vicare)) 
 
 @router.get("/")
 def get_ventilation(device: PyViCareDeviceConfig = Depends(get_single_ventilation_device)) -> dict:
+    # TODO: create methods in PyViCare to access properties easier
+    levels = {
+        level: device.service.getProperty(f"ventilation.operating.programs.level{level.capitalize()}")["properties"]
+        for level in ["one", "two", "three", "four"]
+    }
     return {
-        "deviceId": device.device_id,
-        "model": device.device_model,
-        "serial": device.service.accessor.serial,
+        "device": {
+            "deviceId": device.device_id,
+            "model": device.device_model,
+            "productIdentification": device.service.getProperty("device.productIdentification")["properties"][
+                "product"
+            ]["value"],
+            "serial": device.service.accessor.serial,
+        },
+        "errors": device.service.getProperty("device.messages.errors.raw")["properties"]["entries"]["value"],
+        "filterChange": device.service.getProperty("ventilation.operating.modes.filterChange")["properties"]["active"][
+            "value"
+        ],
+        "levels": {
+            level: {
+                "active": v["active"]["value"],
+                "volumeFlow": f"{v['volumeFlow']['value']} {v['volumeFlow']['unit']}",
+            }
+            for level, v in levels.items()
+        },
         "status": device.status,
     }
 
