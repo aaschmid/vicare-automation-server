@@ -9,8 +9,8 @@ from app.api.heatpump_circuit import (
     ROUTE_PREFIX_HEATPUMP_CIRCUIT,
     HeatingCircuitMode,
     HeatingCircuitProgram,
-    HeatingCircuitProgramCommand,
 )
+from app.api.types import HeatingCommand
 from app.main import app
 
 client = TestClient(app)
@@ -52,11 +52,11 @@ def test_heatpump_circuit_get_program_should_return_current_program(dependency_m
 @pytest.mark.parametrize(
     "dependency_mocker, program, command, expected",
     [
-        (app, "unknown", HeatingCircuitProgramCommand.Activate.value, status.HTTP_404_NOT_FOUND),
+        (app, "unknown", HeatingCommand.Activate.value, status.HTTP_404_NOT_FOUND),
         (
             app,
             HeatingCircuitProgram.Normal.name,
-            HeatingCircuitProgramCommand.Deactivate.value,
+            HeatingCommand.Deactivate.value,
             status.HTTP_405_METHOD_NOT_ALLOWED,
         ),
         (app, HeatingCircuitProgram.Default.name, None, status.HTTP_422_UNPROCESSABLE_ENTITY),
@@ -64,7 +64,7 @@ def test_heatpump_circuit_get_program_should_return_current_program(dependency_m
         (
             app,
             HeatingCircuitProgram.Default.name,
-            HeatingCircuitProgramCommand.Deactivate.value,
+            HeatingCommand.Deactivate.value,
             status.HTTP_405_METHOD_NOT_ALLOWED,
         ),
     ],
@@ -89,21 +89,21 @@ def test_heatpump_circuit_set_program_should_handle_errors_correctly(
         (
             app,
             HeatingCircuitProgram.Eco,
-            HeatingCircuitProgramCommand.Activate,
+            HeatingCommand.Activate,
             [HeatingCircuitProgram.Eco],
             [],
         ),
         (
             app,
             HeatingCircuitProgram.Comfort,
-            HeatingCircuitProgramCommand.Deactivate,
+            HeatingCommand.Deactivate,
             [],
             [HeatingCircuitProgram.Comfort],
         ),
         (
             app,
             HeatingCircuitProgram.Default,
-            HeatingCircuitProgramCommand.Activate,
+            HeatingCommand.Activate,
             [],
             [HeatingCircuitProgram.Comfort, HeatingCircuitProgram.Eco],
         ),
@@ -113,7 +113,7 @@ def test_heatpump_circuit_set_program_should_handle_errors_correctly(
 def test_heatpump_circuit_set_program_should_forward_call_correctly(
     dependency_mocker,
     program: HeatingCircuitProgram,
-    command: HeatingCircuitProgramCommand,
+    command: HeatingCommand,
     expected_activations: list[HeatingCircuitProgram],
     expected_deactivations: list[HeatingCircuitProgram],
 ):
@@ -132,14 +132,26 @@ def test_heatpump_circuit_set_program_should_forward_call_correctly(
     "dependency_mocker, program, temperature, expected",
     [
         (app, "unknown", 23, status.HTTP_404_NOT_FOUND),
-        (app, HeatingCircuitProgram.Eco.name, 24, status.HTTP_405_METHOD_NOT_ALLOWED,),
-        (app, HeatingCircuitProgram.Comfort.name, -1, status.HTTP_422_UNPROCESSABLE_ENTITY,),
+        (
+            app,
+            HeatingCircuitProgram.Eco.name,
+            24,
+            status.HTTP_405_METHOD_NOT_ALLOWED,
+        ),
+        (
+            app,
+            HeatingCircuitProgram.Comfort.name,
+            -1,
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+        ),
         (app, HeatingCircuitProgram.Normal.name, 9, status.HTTP_422_UNPROCESSABLE_ENTITY),
         (app, HeatingCircuitProgram.Reduced.name, 31, status.HTTP_422_UNPROCESSABLE_ENTITY),
     ],
     indirect=["dependency_mocker"],
 )
-def test_heatpump_circuit_set_program_temperature_should_handle_errors_correctly(dependency_mocker, program: str, temperature: Any, expected: int):
+def test_heatpump_circuit_set_program_temperature_should_handle_errors_correctly(
+    dependency_mocker, program: str, temperature: Any, expected: int
+):
     circuit = configure_mocked_circuit(dependency_mocker, Mock())
 
     response = client.put(f"{ROUTE_PREFIX_HEATPUMP_CIRCUIT}/program/{program}/{temperature}")

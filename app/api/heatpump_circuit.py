@@ -7,6 +7,7 @@ from PyViCare.PyViCareHeatingDevice import HeatingCircuit
 from starlette import status
 
 from app.api.heatpump import ROUTE_PREFIX_HEATPUMP, get_single_heatpump
+from app.api.types import HeatingCommand
 
 ROUTE_PREFIX_HEATPUMP_CIRCUIT = f"{ROUTE_PREFIX_HEATPUMP}/circuit"
 router = APIRouter(prefix=ROUTE_PREFIX_HEATPUMP_CIRCUIT)
@@ -42,11 +43,6 @@ class HeatingCircuitProgram(enum.Enum):
         return self.value[2]
 
 
-class HeatingCircuitProgramCommand(enum.Enum):
-    Activate = "activate"
-    Deactivate = "deactivate"
-
-
 def get_single_circuit(heatpump: PyViCareHeatPump = Depends(get_single_heatpump)) -> HeatingCircuit:
     result = [c for c in heatpump.circuits]
     if len(result) <= 0:
@@ -76,7 +72,7 @@ def get_program(circuit: HeatingCircuit = Depends(get_single_circuit)) -> str:
 
 @router.put("/program/{program}", status_code=status.HTTP_204_NO_CONTENT)
 def set_program(
-    command: Annotated[HeatingCircuitProgramCommand, Body()],
+    command: Annotated[HeatingCommand, Body()],
     program: Annotated[str, Path(title="The heating circuit program")],
     # program: Annotated[HeatingCircuitProgram, Path(title="The heating circuit program"), PlainSerializer(lambda x: parse_program(x), HeatingCircuitProgram)],
     circuit: HeatingCircuit = Depends(get_single_circuit),
@@ -89,7 +85,7 @@ def set_program(
             detail=f"Can only activate {[p for p in HeatingCircuitProgram if p.manually_settable]} manually.",
         )
 
-    if command == HeatingCircuitProgramCommand.Deactivate:
+    if command == HeatingCommand.Deactivate:
         if program_ == HeatingCircuitProgram.Default:
             raise HTTPException(
                 status.HTTP_405_METHOD_NOT_ALLOWED,
@@ -97,7 +93,7 @@ def set_program(
             )
         else:
             circuit.deactivateProgram(program_.name)
-    elif command == HeatingCircuitProgramCommand.Activate:
+    elif command == HeatingCommand.Activate:
         if program_ == HeatingCircuitProgram.Default:
             for p in HeatingCircuitProgram:
                 if p.manually_settable and p != program_:

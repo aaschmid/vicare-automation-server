@@ -1,0 +1,67 @@
+import enum
+from typing import Annotated
+
+from fastapi import APIRouter, Body, Depends, Path
+from PyViCare import PyViCare
+from PyViCare.PyViCareHeatingDevice import HeatingDevice
+from starlette import status
+
+from app import dependencies
+from app.api.heatpump import ROUTE_PREFIX_HEATPUMP, get_single_heatpump_device
+from app.api.types import HeatingCommand
+
+ROUTE_PREFIX_HEATING_DHW = f"{ROUTE_PREFIX_HEATPUMP}/dhw"
+router = APIRouter(prefix=ROUTE_PREFIX_HEATING_DHW)
+
+
+class HeatingDomesticHotWaterLevel(enum.Enum):
+    Main = "main"
+    Temp2 = "temp2"
+
+
+def get_single_heating(vicare: PyViCare = Depends(dependencies.get_vicare)) -> HeatingDevice:
+    return get_single_heatpump_device(vicare).asGeneric()
+
+
+@router.get("/")
+def get_dhw(heating: HeatingDevice = Depends(get_single_heating)) -> dict:
+    return {
+        "active": heating.getDomesticHotWaterActive(),
+        "chargingActive": heating.getDomesticHotWaterChargingActive(),
+        "levels": {
+            "main": heating.getDomesticHotWaterConfiguredTemperature(),
+            "max": heating.getDomesticHotWaterMaxTemperature(),
+            "min": heating.getDomesticHotWaterMinTemperature(),
+            "temp2": heating.getDomesticHotWaterConfiguredTemperature2(),
+        },
+        "oneTimeCharge": heating.getOneTimeCharge(),
+        "pumps": {
+            "circulationActive": heating.getDomesticHotWaterCirculationPumpActive(),
+            "mode": heating.getDomesticHotWaterCirculationMode(),
+            "primaryActive": heating.getDomesticHotWaterPumpActive(),
+        },
+        "storageTemperature": heating.getDomesticHotWaterStorageTemperature(),
+    }
+
+
+@router.put("/onetimecharge", status_code=status.HTTP_204_NO_CONTENT)
+def set_one_time_charge(
+    command: Annotated[HeatingCommand, Body()],
+    heating: HeatingDevice = Depends(get_single_heating),
+):
+    if command == HeatingCommand.Activate:
+        heating.activateOneTimeCharge()
+    elif command == HeatingCommand.Deactivate:
+        heating.deactivateOneTimeCharge()
+
+
+@router.put("/level/{level}/{temperature}", status_code=status.HTTP_204_NO_CONTENT)
+def set_level_temperature(
+    level: Annotated[HeatingDomesticHotWaterLevel, Path(title="The heating circuit program")],
+    temperature: Annotated[int, Path(title="The temperature of the provided heating circuit program", ge=10, le=60)],
+    heating: HeatingDevice = Depends(get_single_heating),
+):
+    if level == HeatingDomesticHotWaterLevel.Main:
+        heating.setDomesticHotWaterTemperature(temperature)
+    elif level == HeatingDomesticHotWaterLevel.Temp2:
+        heating.setDomesticHotWaterTemperature2(temperature)
