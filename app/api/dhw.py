@@ -7,10 +7,10 @@ from PyViCare.PyViCareHeatingDevice import HeatingDevice
 from starlette import status
 
 from app import dependencies
-from app.api.heatpump import ROUTE_PREFIX_HEATPUMP, get_single_heatpump_device
+from app.api.heating import ROUTE_PREFIX_HEATING, get_single_heating_device
 from app.api.types import HeatingCommand
 
-ROUTE_PREFIX_HEATING_DHW = f"{ROUTE_PREFIX_HEATPUMP}/dhw"
+ROUTE_PREFIX_HEATING_DHW = f"{ROUTE_PREFIX_HEATING}/dhw"
 router = APIRouter(prefix=ROUTE_PREFIX_HEATING_DHW)
 
 
@@ -20,7 +20,7 @@ class HeatingDomesticHotWaterLevel(enum.Enum):
 
 
 def get_single_heating(vicare: PyViCare = Depends(dependencies.get_vicare)) -> HeatingDevice:
-    return get_single_heatpump_device(vicare).asGeneric()
+    return get_single_heating_device(vicare).asGeneric()
 
 
 @router.get("/")

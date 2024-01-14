@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from PyViCare import PyViCareDeviceConfig, PyViCareHeatPump
 from PyViCare.PyViCareHeatPump import Compressor
 
-from app import dependencies
+from app.api.heating import ROUTE_PREFIX_HEATING, get_single_heating_device
 
-ROUTE_PREFIX_HEATPUMP = "/heatpump"
-router = APIRouter(prefix=ROUTE_PREFIX_HEATPUMP)
+ROUTE_PREFIX_HEATING_HEATPUMP = f"{ROUTE_PREFIX_HEATING}/heatpump"
+router = APIRouter(prefix=ROUTE_PREFIX_HEATING_HEATPUMP)
 
 
 def get_single_heatpump(device: PyViCareDeviceConfig = Depends(get_single_heating_device)) -> PyViCareHeatPump:

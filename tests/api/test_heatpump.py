@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 from fastapi.testclient import TestClient
 
-from app.api.heatpump import ROUTE_PREFIX_HEATPUMP
+from app.api.heatpump import ROUTE_PREFIX_HEATING_HEATPUMP
 from app.main import app
 
 client = TestClient(app)

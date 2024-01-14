@@ -5,8 +5,8 @@ import pytest
 from fastapi.testclient import TestClient
 from starlette import status
 
-from app.api.heatpump_circuit import (
-    ROUTE_PREFIX_HEATPUMP_CIRCUIT,
+from app.api.circuit import (
+    ROUTE_PREFIX_HEATING_CIRCUIT,
     HeatingCircuitMode,
     HeatingCircuitProgram,
 )
@@ -21,7 +21,7 @@ def test_heatpump_circuit_get_mode_should_return_current_mode(dependency_mocker)
     mode = HeatingCircuitMode.DhwAndHeating.value
     configure_mocked_circuit(dependency_mocker, Mock(getActiveMode=lambda: mode))
 
-    response = client.get(f"{ROUTE_PREFIX_HEATPUMP_CIRCUIT}/mode")
+    response = client.get(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/mode")
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == mode
@@ -32,7 +32,7 @@ def test_heatpump_circuit_set_mode_should_forward_call_correctly(dependency_mock
     mode = HeatingCircuitMode.Dhw.value
     circuit = configure_mocked_circuit(dependency_mocker, Mock())
 
-    response = client.put(f"{ROUTE_PREFIX_HEATPUMP_CIRCUIT}/mode/{mode}")
+    response = client.put(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/mode/{mode}")
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
     circuit.setMode.assert_called_once_with(mode)
@@ -43,7 +43,7 @@ def test_heatpump_circuit_get_program_should_return_current_program(dependency_m
     program = HeatingCircuitProgram.Normal.name
     configure_mocked_circuit(dependency_mocker, Mock(getActiveProgram=lambda: program))
 
-    response = client.get(f"{ROUTE_PREFIX_HEATPUMP_CIRCUIT}/program")
+    response = client.get(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/program")
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == program
@@ -75,7 +75,7 @@ def test_heatpump_circuit_set_program_should_handle_errors_correctly(
 ):
     circuit = configure_mocked_circuit(dependency_mocker, Mock())
 
-    response = client.put(f"{ROUTE_PREFIX_HEATPUMP_CIRCUIT}/program/{program}", json=command)
+    response = client.put(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/program/{program}", json=command)
 
     assert response.status_code == expected
     circuit.assert_not_called()
@@ -119,7 +119,7 @@ def test_heatpump_circuit_set_program_should_forward_call_correctly(
 ):
     circuit = configure_mocked_circuit(dependency_mocker, Mock())
 
-    response = client.put(f"{ROUTE_PREFIX_HEATPUMP_CIRCUIT}/program/{program.name}", json=command.value)
+    response = client.put(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/program/{program.name}", json=command.value)
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
@@ -154,7 +154,7 @@ def test_heatpump_circuit_set_program_temperature_should_handle_errors_correctly
 ):
     circuit = configure_mocked_circuit(dependency_mocker, Mock())
 
-    response = client.put(f"{ROUTE_PREFIX_HEATPUMP_CIRCUIT}/program/{program}/{temperature}")
+    response = client.put(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/program/{program}/{temperature}")
 
     assert response.status_code == expected
     circuit.assert_not_called()
@@ -173,7 +173,7 @@ def test_heatpump_circuit_set_program_temperature_should_handle_errors_correctly
 def test_heatpump_circuit_set_program_temperature(dependency_mocker, program: HeatingCircuitProgram, temperature: int):
     circuit = configure_mocked_circuit(dependency_mocker, Mock())
 
-    response = client.put(f"{ROUTE_PREFIX_HEATPUMP_CIRCUIT}/program/{program.name}/{temperature}")
+    response = client.put(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/program/{program.name}/{temperature}")
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
 

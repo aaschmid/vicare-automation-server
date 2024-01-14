@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 from starlette import status
 
-from app.api.heating_dhw import ROUTE_PREFIX_HEATING_DHW, HeatingDomesticHotWaterLevel
+from app.api.dhw import ROUTE_PREFIX_HEATING_DHW, HeatingDomesticHotWaterLevel
 from app.api.types import HeatingCommand
 from app.main import app
 

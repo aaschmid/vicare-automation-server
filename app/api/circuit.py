@@ -6,11 +6,12 @@ from PyViCare import PyViCareHeatPump
 from PyViCare.PyViCareHeatingDevice import HeatingCircuit
 from starlette import status
 
-from app.api.heatpump import ROUTE_PREFIX_HEATPUMP, get_single_heatpump
+from app.api.heating import ROUTE_PREFIX_HEATING
+from app.api.heatpump import get_single_heatpump
 from app.api.types import HeatingCommand
 
-ROUTE_PREFIX_HEATPUMP_CIRCUIT = f"{ROUTE_PREFIX_HEATPUMP}/circuit"
-router = APIRouter(prefix=ROUTE_PREFIX_HEATPUMP_CIRCUIT)
+ROUTE_PREFIX_HEATING_CIRCUIT = f"{ROUTE_PREFIX_HEATING}/circuit"
+router = APIRouter(prefix=ROUTE_PREFIX_HEATING_CIRCUIT)
 
 
 class HeatingCircuitMode(enum.Enum):
