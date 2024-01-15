@@ -17,14 +17,53 @@ client = TestClient(app)
 
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
-def test_heatpump_circuit_get_mode_should_return_current_mode(dependency_mocker):
-    mode = HeatingCircuitMode.DhwAndHeating.value
-    configure_mocked_circuit(dependency_mocker, Mock(getActiveMode=lambda: mode))
+def test_heatpump_circuit_get_should_return_current_state(dependency_mocker):
+    property_map = {
+        "heating.circuits.1.temperature": {"properties": {"value": {"value": 30}}},
+    }
+    configure_mocked_circuit(
+        dependency_mocker,
+        Mock(
+            getActive=lambda: True,
+            getActiveMode=lambda: HeatingCircuitMode.DhwAndHeating.value,
+            getFrostProtectionActive=lambda: False,
+            getHeatingCurveShift=lambda: -1,
+            getHeatingCurveSlope=lambda: 0.4,
+            getName=lambda: "Heizkreis",
+            getCirculationPumpActive=lambda: True,
+            getActiveProgram=lambda: HeatingCircuitProgram.Normal.value,
+            getTemperatureLevelsMin=lambda: 10,
+            getTemperatureLevelsMax=lambda: 40,
+            getSupplyTemperature=lambda: 27.4,
+            circuit=1,
+            service=Mock(getProperty=lambda p: property_map[p]),
+        ),
+    )
 
-    response = client.get(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/mode")
+    response = client.get(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/")
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == mode
+    assert response.json() == {
+        "active": True,
+        "circuitNo": 1,
+        "frostProtectionActive": False,
+        "heatingCurve": {
+            "shift": -1,
+            "slope": 0.4,
+        },
+        "mode": HeatingCircuitMode.DhwAndHeating.value,
+        "name": "Heizkreis",
+        "pumpActive": True,
+        "program": HeatingCircuitProgram.Normal.value,
+        "temperature": {
+            "main": 30,
+            "levels": {
+                "min": 10,
+                "max": 40,
+            },
+            "supply": 27.4,
+        },
+    }
 
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
@@ -36,17 +75,6 @@ def test_heatpump_circuit_set_mode_should_forward_call_correctly(dependency_mock
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
     circuit.setMode.assert_called_once_with(mode)
-
-
-@pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
-def test_heatpump_circuit_get_program_should_return_current_program(dependency_mocker):
-    program = HeatingCircuitProgram.Normal.name
-    configure_mocked_circuit(dependency_mocker, Mock(getActiveProgram=lambda: program))
-
-    response = client.get(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/program")
-
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json() == program
 
 
 @pytest.mark.parametrize(

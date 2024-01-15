@@ -45,9 +45,30 @@ def get_single_circuit(heatpump: PyViCareHeatPump = Depends(get_single_heatpump)
     return result[0]
 
 
-@router.get("/mode")
-def get_mode(circuit: HeatingCircuit = Depends(get_single_circuit)) -> str:
-    return circuit.getActiveMode()
+@router.get("/")
+def get_circuit(circuit: HeatingCircuit = Depends(get_single_circuit)) -> dict:
+    no = circuit.circuit
+    return {
+        "active": circuit.getActive(),
+        "circuitNo": no,
+        "frostProtectionActive": circuit.getFrostProtectionActive(),
+        "heatingCurve": {
+            "shift": circuit.getHeatingCurveShift(),
+            "slope": circuit.getHeatingCurveSlope(),
+        },
+        "mode": circuit.getActiveMode(),
+        "name": circuit.getName(),
+        "pumpActive": circuit.getCirculationPumpActive(),
+        "program": circuit.getActiveProgram(),
+        "temperature": {
+            "main": circuit.service.getProperty(f"heating.circuits.{no}.temperature")["properties"]["value"]["value"],
+            "levels": {
+                "min": circuit.getTemperatureLevelsMin(),
+                "max": circuit.getTemperatureLevelsMax(),
+            },
+            "supply": circuit.getSupplyTemperature(),
+        },
+    }
 
 
 @router.put("/mode/{mode}", status_code=status.HTTP_204_NO_CONTENT)
@@ -56,11 +77,6 @@ def set_mode(
     circuit: HeatingCircuit = Depends(get_single_circuit),
 ):
     circuit.setMode(mode.value)
-
-
-@router.get("/program")
-def get_program(circuit: HeatingCircuit = Depends(get_single_circuit)) -> str:
-    return circuit.getActiveProgram()
 
 
 @router.put("/program/{program}", status_code=status.HTTP_204_NO_CONTENT)
