@@ -31,7 +31,7 @@ def test_heating_dhw_get_should_return_current_status(dependency_mocker):
         ),
     )
 
-    response = client.get(f"{ROUTE_PREFIX_HEATING_DHW}/")
+    response = client.get(ROUTE_PREFIX_HEATING_DHW)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {

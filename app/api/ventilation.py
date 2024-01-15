@@ -24,7 +24,7 @@ def get_single_ventilation(vicare: PyViCare = Depends(dependencies.get_vicare)) 
     return get_single_ventilation_device(vicare).asVentilation()
 
 
-@router.get("/")
+@router.get("")
 def get_ventilation(device: PyViCareDeviceConfig = Depends(get_single_ventilation_device)) -> dict:
     # TODO: create methods in PyViCare to access properties easier
     levels = {

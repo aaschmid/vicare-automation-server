@@ -41,7 +41,7 @@ class HealthModel(BaseModel):
     checks: ChecksModel
 
 
-@router.get("/")
+@router.get("")
 def health(response: Response, vicare: PyViCare = Depends(dependencies.get_vicare)) -> HealthModel:
     response.headers["Cache-Control"] = "no-cache"
 

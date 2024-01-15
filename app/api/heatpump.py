@@ -20,7 +20,7 @@ def get_single_compressor(heatpump: PyViCareHeatPump = Depends(get_single_heatpu
     return heatpump.compressors[0]
 
 
-@router.get("/")
+@router.get("")
 def get_heatpump(
     device: PyViCareDeviceConfig = Depends(get_single_heating_device),
     heatpump: PyViCareHeatPump = Depends(get_single_heatpump),

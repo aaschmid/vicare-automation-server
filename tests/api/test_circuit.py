@@ -40,7 +40,7 @@ def test_heatpump_circuit_get_should_return_current_state(dependency_mocker):
         ),
     )
 
-    response = client.get(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/")
+    response = client.get(ROUTE_PREFIX_HEATING_CIRCUIT)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {

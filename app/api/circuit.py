@@ -45,7 +45,7 @@ def get_single_circuit(heatpump: PyViCareHeatPump = Depends(get_single_heatpump)
     return result[0]
 
 
-@router.get("/")
+@router.get("")
 def get_circuit(circuit: HeatingCircuit = Depends(get_single_circuit)) -> dict:
     no = circuit.circuit
     return {

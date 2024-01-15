@@ -23,7 +23,7 @@ def get_single_heating(vicare: PyViCare = Depends(dependencies.get_vicare)) -> H
     return get_single_heating_device(vicare).asGeneric()
 
 
-@router.get("/")
+@router.get("")
 def get_dhw(heating: HeatingDevice = Depends(get_single_heating)) -> dict:
     return {
         "active": heating.getDomesticHotWaterActive(),
