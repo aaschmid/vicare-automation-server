@@ -52,18 +52,18 @@ def test_heatpump_circuit_get_program_should_return_current_program(dependency_m
 @pytest.mark.parametrize(
     "dependency_mocker, program, command, expected",
     [
-        (app, "unknown", HeatingCommand.Activate.value, status.HTTP_404_NOT_FOUND),
+        (app, "unknown", HeatingCommand.Activate.value, status.HTTP_422_UNPROCESSABLE_ENTITY),
         (
             app,
-            HeatingCircuitProgram.Normal.name,
+            HeatingCircuitProgram.Normal.value,
             HeatingCommand.Deactivate.value,
             status.HTTP_405_METHOD_NOT_ALLOWED,
         ),
-        (app, HeatingCircuitProgram.Default.name, None, status.HTTP_422_UNPROCESSABLE_ENTITY),
-        (app, HeatingCircuitProgram.Default.name, "unknown", status.HTTP_422_UNPROCESSABLE_ENTITY),
+        (app, HeatingCircuitProgram.Default.value, None, status.HTTP_422_UNPROCESSABLE_ENTITY),
+        (app, HeatingCircuitProgram.Default.value, "unknown", status.HTTP_422_UNPROCESSABLE_ENTITY),
         (
             app,
-            HeatingCircuitProgram.Default.name,
+            HeatingCircuitProgram.Default.value,
             HeatingCommand.Deactivate.value,
             status.HTTP_405_METHOD_NOT_ALLOWED,
         ),
@@ -119,33 +119,33 @@ def test_heatpump_circuit_set_program_should_forward_call_correctly(
 ):
     circuit = configure_mocked_circuit(dependency_mocker, Mock())
 
-    response = client.put(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/program/{program.name}", json=command.value)
+    response = client.put(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/program/{program.value}", json=command.value)
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     circuit.assert_not_called()
-    assert_mock_calls(circuit.activateProgram, [p.name for p in expected_activations])
-    assert_mock_calls(circuit.deactivateProgram, [p.name for p in expected_deactivations])
+    assert_mock_calls(circuit.activateProgram, [p.value for p in expected_activations])
+    assert_mock_calls(circuit.deactivateProgram, [p.value for p in expected_deactivations])
 
 
 @pytest.mark.parametrize(
     "dependency_mocker, program, temperature, expected",
     [
-        (app, "unknown", 23, status.HTTP_404_NOT_FOUND),
+        (app, "unknown", 23, status.HTTP_422_UNPROCESSABLE_ENTITY),
         (
             app,
-            HeatingCircuitProgram.Eco.name,
+            HeatingCircuitProgram.Eco.value,
             24,
             status.HTTP_405_METHOD_NOT_ALLOWED,
         ),
         (
             app,
-            HeatingCircuitProgram.Comfort.name,
+            HeatingCircuitProgram.Comfort.value,
             -1,
             status.HTTP_422_UNPROCESSABLE_ENTITY,
         ),
-        (app, HeatingCircuitProgram.Normal.name, 9, status.HTTP_422_UNPROCESSABLE_ENTITY),
-        (app, HeatingCircuitProgram.Reduced.name, 31, status.HTTP_422_UNPROCESSABLE_ENTITY),
+        (app, HeatingCircuitProgram.Normal.value, 9, status.HTTP_422_UNPROCESSABLE_ENTITY),
+        (app, HeatingCircuitProgram.Reduced.value, 31, status.HTTP_422_UNPROCESSABLE_ENTITY),
     ],
     indirect=["dependency_mocker"],
 )
@@ -173,12 +173,12 @@ def test_heatpump_circuit_set_program_temperature_should_handle_errors_correctly
 def test_heatpump_circuit_set_program_temperature(dependency_mocker, program: HeatingCircuitProgram, temperature: int):
     circuit = configure_mocked_circuit(dependency_mocker, Mock())
 
-    response = client.put(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/program/{program.name}/{temperature}")
+    response = client.put(f"{ROUTE_PREFIX_HEATING_CIRCUIT}/program/{program.value}/{temperature}")
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     circuit.assert_not_called()
-    circuit.setProgramTemperature.assert_called_once_with(program.name, temperature)
+    circuit.setProgramTemperature.assert_called_once_with(program.value, temperature)
 
 
 def configure_mocked_circuit(dependency_mocker, preconfigured_circuit_mock: Mock) -> Mock:

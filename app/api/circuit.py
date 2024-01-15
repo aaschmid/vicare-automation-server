@@ -21,27 +21,19 @@ class HeatingCircuitMode(enum.Enum):
 
 
 class HeatingCircuitProgram(enum.Enum):
-    Comfort = ("comfort", True, True)
-    Default = (
-        "default",
-        True,
-        False,
-    )  # deactivates all manually settable i.e. returns implicitly to default (= timetable based)
-    Eco = ("eco", True, False)
-    Normal = ("normal", False, True)
-    Reduced = ("reduced", False, True)
-
-    @property
-    def name(self):
-        return self.value[0]
+    Comfort = "comfort"
+    Default = "default"  # deactivates all manually settable i.e. returns implicitly to default (= timetable based)
+    Eco = "eco"
+    Normal = "normal"
+    Reduced = "reduced"
 
     @property
     def manually_settable(self):
-        return self.value[1]
+        return self in [self.Comfort, self.Eco, self.Default]
 
     @property
     def temperature_settable(self):
-        return self.value[2]
+        return self in [self.Comfort, self.Normal, self.Reduced]
 
 
 def get_single_circuit(heatpump: PyViCareHeatPump = Depends(get_single_heatpump)) -> HeatingCircuit:
@@ -74,57 +66,42 @@ def get_program(circuit: HeatingCircuit = Depends(get_single_circuit)) -> str:
 @router.put("/program/{program}", status_code=status.HTTP_204_NO_CONTENT)
 def set_program(
     command: Annotated[HeatingCommand, Body()],
-    program: Annotated[str, Path(title="The heating circuit program")],
+    program: Annotated[HeatingCircuitProgram, Path(title="The heating circuit program")],
     # program: Annotated[HeatingCircuitProgram, Path(title="The heating circuit program"), PlainSerializer(lambda x: parse_program(x), HeatingCircuitProgram)],
     circuit: HeatingCircuit = Depends(get_single_circuit),
 ):
-    program_ = _parse_program(program)
-
-    if not program_.manually_settable:
+    if not program.manually_settable:
         raise HTTPException(
             status.HTTP_405_METHOD_NOT_ALLOWED,
             detail=f"Can only activate {[p for p in HeatingCircuitProgram if p.manually_settable]} manually.",
         )
 
     if command == HeatingCommand.Deactivate:
-        if program_ == HeatingCircuitProgram.Default:
+        if program == HeatingCircuitProgram.Default:
             raise HTTPException(
                 status.HTTP_405_METHOD_NOT_ALLOWED,
                 detail="Can only activate Dummy value 'Default', but not deactivate.",
             )
         else:
-            circuit.deactivateProgram(program_.name)
+            circuit.deactivateProgram(program.value)
     elif command == HeatingCommand.Activate:
-        if program_ == HeatingCircuitProgram.Default:
+        if program == HeatingCircuitProgram.Default:
             for p in HeatingCircuitProgram:
-                if p.manually_settable and p != program_:
-                    circuit.deactivateProgram(p.name)
+                if p.manually_settable and p != program:
+                    circuit.deactivateProgram(p.value)
         else:
-            circuit.activateProgram(program_.name)
+            circuit.activateProgram(program.value)
 
 
 @router.put("/program/{program}/{temperature}", status_code=status.HTTP_204_NO_CONTENT)
 def set_program_temperature(
-    program: Annotated[str, Path(title="The heating circuit program")],
+    program: Annotated[HeatingCircuitProgram, Path(title="The heating circuit program")],
     temperature: Annotated[int, Path(title="The temperature of the provided heating circuit program", ge=10, le=30)],
     circuit: HeatingCircuit = Depends(get_single_circuit),
 ):
-    program_ = _parse_program(program)
-
-    if not program_.temperature_settable:
+    if not program.temperature_settable:
         raise HTTPException(
             status.HTTP_405_METHOD_NOT_ALLOWED,
             detail=f"Can only set temperature of {[p for p in HeatingCircuitProgram if p.temperature_settable]} manually.",
         )
-    circuit.setProgramTemperature(program_.name, temperature)
-
-
-def _parse_program(program: str) -> HeatingCircuitProgram:
-    # Manually parse program as I couldn't find how to let it do FastAPI with enhanced enum
-    results = [p for p in HeatingCircuitProgram if p.name == program]
-    if len(results) != 1:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            detail=f"Program must be one of {[p.name for p in HeatingCircuitProgram if p.name]} but was {program}.",
-        )
-    return results[0]
+    circuit.setProgramTemperature(program.value, temperature)
