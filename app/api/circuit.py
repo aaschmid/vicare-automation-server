@@ -19,6 +19,10 @@ class HeatingCircuitMode(enum.Enum):
     DhwAndHeating = "dhwAndHeating"
     Standby = "standby"
 
+    @classmethod
+    def no_of(cls, value: str) -> int:
+        return {cls.Standby.value: 0, cls.Dhw.value: 1, cls.DhwAndHeating.value: 2}.get(value, -1)
+
 
 class HeatingCircuitProgram(enum.Enum):
     Comfort = "comfort"
@@ -35,6 +39,16 @@ class HeatingCircuitProgram(enum.Enum):
     def temperature_settable(self):
         return self in [self.Comfort, self.Normal, self.Reduced]
 
+    @classmethod
+    def no_of(cls, value: str) -> int:
+        return {
+            cls.Default.value: 0,
+            cls.Eco.value: 1,
+            cls.Comfort.value: 2,
+            cls.Normal.value: 3,
+            cls.Reduced.value: 4,
+        }.get(value, -1)
+
 
 def get_single_circuit(heatpump: PyViCareHeatPump = Depends(get_single_heatpump)) -> HeatingCircuit:
     result = [c for c in heatpump.circuits]
@@ -48,18 +62,22 @@ def get_single_circuit(heatpump: PyViCareHeatPump = Depends(get_single_heatpump)
 @router.get("")
 def get_circuit(circuit: HeatingCircuit = Depends(get_single_circuit)) -> dict:
     no = circuit.circuit
+    program = circuit.getActiveProgram()
+    mode = circuit.getActiveMode()
     return {
-        "active": circuit.getActive(),
+        "active": 1 if circuit.getActive() else 0,
         "circuitNo": no,
-        "frostProtectionActive": circuit.getFrostProtectionActive(),
+        "frostProtectionActive": 1 if circuit.getFrostProtectionActive() else 0,
         "heatingCurve": {
             "shift": circuit.getHeatingCurveShift(),
             "slope": circuit.getHeatingCurveSlope(),
         },
-        "mode": circuit.getActiveMode(),
+        "mode": mode,
+        "modeNo": HeatingCircuitMode.no_of(mode),
         "name": circuit.getName(),
-        "pumpActive": circuit.getCirculationPumpActive(),
-        "program": circuit.getActiveProgram(),
+        "pumpActive": 1 if circuit.getCirculationPumpActive() else 0,
+        "program": program,
+        "programNo": HeatingCircuitProgram.no_of(program),
         "temperature": {
             "main": circuit.service.getProperty(f"heating.circuits.{no}.temperature")["properties"]["value"]["value"],
             "levels": {

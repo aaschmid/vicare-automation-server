@@ -31,7 +31,12 @@ def get_ventilation(device: PyViCareDeviceConfig = Depends(get_single_ventilatio
         level: device.service.getProperty(f"ventilation.operating.programs.level{level.capitalize()}")["properties"]
         for level in ["one", "two", "three", "four"]
     }
+    errors = device.service.getProperty("device.messages.errors.raw")["properties"]["entries"]["value"]
+    filter_change = device.service.getProperty("ventilation.operating.modes.filterChange")["properties"]["active"][
+        "value"
+    ]
     return {
+        "active": 1 if device.status.lower() == "online" else 0,
         "device": {
             "deviceId": device.device_id,
             "model": device.device_model,
@@ -40,13 +45,12 @@ def get_ventilation(device: PyViCareDeviceConfig = Depends(get_single_ventilatio
             ]["value"],
             "serial": device.service.accessor.serial,
         },
-        "errors": device.service.getProperty("device.messages.errors.raw")["properties"]["entries"]["value"],
-        "filterChange": device.service.getProperty("ventilation.operating.modes.filterChange")["properties"]["active"][
-            "value"
-        ],
+        "errors": errors,
+        "errorCount": len(errors),
+        "filterChange": 1 if filter_change else 0,
         "levels": {
             level: {
-                "active": v["active"]["value"],
+                "active": 1 if v["active"]["value"] else 0,
                 "volumeFlow": f"{v['volumeFlow']['value']} {v['volumeFlow']['unit']}",
             }
             for level, v in levels.items()

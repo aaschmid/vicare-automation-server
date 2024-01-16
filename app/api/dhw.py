@@ -26,19 +26,19 @@ def get_single_heating(vicare: PyViCare = Depends(dependencies.get_vicare)) -> H
 @router.get("")
 def get_dhw(heating: HeatingDevice = Depends(get_single_heating)) -> dict:
     return {
-        "active": heating.getDomesticHotWaterActive(),
-        "chargingActive": heating.getDomesticHotWaterChargingActive(),
+        "active": 1 if heating.getDomesticHotWaterActive() else 0,
+        "chargingActive": 1 if heating.getDomesticHotWaterChargingActive() else 0,
         "levels": {
             "main": heating.getDomesticHotWaterConfiguredTemperature(),
             "max": heating.getDomesticHotWaterMaxTemperature(),
             "min": heating.getDomesticHotWaterMinTemperature(),
             "temp2": heating.getDomesticHotWaterConfiguredTemperature2(),
         },
-        "oneTimeCharge": heating.getOneTimeCharge(),
+        "oneTimeCharge": 1 if heating.getOneTimeCharge() else 0,
         "pumps": {
-            "circulationActive": heating.getDomesticHotWaterCirculationPumpActive(),
+            "circulationActive": 1 if heating.getDomesticHotWaterCirculationPumpActive() else 0,
             "mode": heating.getDomesticHotWaterCirculationMode(),
-            "primaryActive": heating.getDomesticHotWaterPumpActive(),
+            "primaryActive": 1 if heating.getDomesticHotWaterPumpActive() else 0,
         },
         "storageTemperature": heating.getDomesticHotWaterStorageTemperature(),
     }

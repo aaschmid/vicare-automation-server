@@ -44,17 +44,19 @@ def test_heatpump_circuit_get_should_return_current_state(dependency_mocker):
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
-        "active": True,
+        "active": 1,
         "circuitNo": 1,
-        "frostProtectionActive": False,
+        "frostProtectionActive": 0,
         "heatingCurve": {
             "shift": -1,
             "slope": 0.4,
         },
         "mode": HeatingCircuitMode.DhwAndHeating.value,
+        "modeNo": 2,
         "name": "Heizkreis",
-        "pumpActive": True,
+        "pumpActive": 1,
         "program": HeatingCircuitProgram.Normal.value,
+        "programNo": 3,
         "temperature": {
             "main": 30,
             "levels": {

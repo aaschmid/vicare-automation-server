@@ -35,19 +35,19 @@ def test_heating_dhw_get_should_return_current_status(dependency_mocker):
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
-        "active": True,
-        "chargingActive": False,
+        "active": 1,
+        "chargingActive": 0,
         "levels": {
             "main": 40,
             "min": 10,
             "max": 60,
             "temp2": 45,
         },
-        "oneTimeCharge": False,
+        "oneTimeCharge": 0,
         "pumps": {
-            "circulationActive": True,
+            "circulationActive": 1,
             "mode": "10/25-cycle",
-            "primaryActive": False,
+            "primaryActive": 0,
         },
         "storageTemperature": 40.5,
     }

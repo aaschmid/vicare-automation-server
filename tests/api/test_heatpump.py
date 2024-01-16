@@ -48,6 +48,7 @@ def test_heatpump_should_return_meta_information_on_root(dependency_mocker):
 
     assert response.status_code == 200
     assert response.json() == {
+        "active": 1,
         "device": {
             "boilerSerial": "boiler-serial",
             "controllerSerial": "controller-serial",
@@ -62,6 +63,7 @@ def test_heatpump_should_return_meta_information_on_root(dependency_mocker):
             "starts": 12,
         },
         "errors": ["error x"],
+        "errorCount": 1,
         "temperature": {
             "buffer": 21.3,
             "outside": 3.3,
