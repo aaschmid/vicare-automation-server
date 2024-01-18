@@ -15,6 +15,6 @@ def get_settings() -> Settings:
 @lru_cache()
 def get_vicare(settings: Annotated[Settings, Depends(get_settings)]) -> PyViCare:
     vicare = PyViCare()
-    vicare.setCacheDuration(60)
+    vicare.setCacheDuration(120)
     vicare.initWithCredentials(settings.email, settings.password, settings.client_id, "vicare.token")
     return vicare
