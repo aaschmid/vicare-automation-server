@@ -58,7 +58,7 @@ def test_heatpump_circuit_get_should_return_current_state(dependency_mocker):
         "program": HeatingCircuitProgram.Normal.value,
         "programNo": 3,
         "temperature": {
-            "main": 30,
+            "target": 30,
             "levels": {
                 "min": 10,
                 "max": 40,
