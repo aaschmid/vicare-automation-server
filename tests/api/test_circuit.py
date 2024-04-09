@@ -20,6 +20,25 @@ client = TestClient(app)
 def test_heatpump_circuit_get_should_return_current_state(dependency_mocker):
     property_map = {
         "heating.circuits.1.temperature": {"properties": {"value": {"value": 30}}},
+        f"heating.circuits.1.operating.programs.{HeatingCircuitProgram.Comfort.value}": {
+            "properties": {
+                "active": {"value": False},
+                "demand": {"value": "unknown"},
+            }
+        },
+        f"heating.circuits.1.operating.programs.{HeatingCircuitProgram.Normal.value}": {
+            "properties": {
+                "active": {"value": True},
+                "demand": {"value": "unknown"},
+                "temperature": {"value": 22, "unit": "celsius"},
+            }
+        },
+        f"heating.circuits.1.operating.programs.{HeatingCircuitProgram.Reduced.value}": {
+            "properties": {
+                "active": {"value": False},
+                "temperature": {"value": 18, "unit": "celsius"},
+            }
+        },
     }
     configure_mocked_circuit(
         dependency_mocker,
@@ -35,6 +54,12 @@ def test_heatpump_circuit_get_should_return_current_state(dependency_mocker):
             getTemperatureLevelsMin=lambda: 10,
             getTemperatureLevelsMax=lambda: 40,
             getSupplyTemperature=lambda: 27.4,
+            getTargetSupplyTemperature=lambda: 29.2,
+            getPrograms=lambda: [
+                HeatingCircuitProgram.Comfort.value,
+                HeatingCircuitProgram.Normal.value,
+                HeatingCircuitProgram.Reduced.value,
+            ],
             circuit=1,
             service=Mock(getProperty=lambda p: property_map[p]),
         ),
@@ -55,15 +80,33 @@ def test_heatpump_circuit_get_should_return_current_state(dependency_mocker):
         "modeNo": 2,
         "name": "Heizkreis",
         "pumpActive": 1,
-        "program": HeatingCircuitProgram.Normal.value,
-        "programNo": 3,
+        "programs": {
+            "active": HeatingCircuitProgram.Normal.value,
+            "activeNo": 3,
+            "comfort": {
+                "active": 0,
+                "demand": "unknown",
+                "temperature": "n/a",
+            },
+            "normal": {
+                "active": 1,
+                "demand": "unknown",
+                "temperature": 22,
+            },
+            "reduced": {
+                "active": 0,
+                "demand": "n/a",
+                "temperature": 18,
+            },
+        },
         "temperature": {
-            "target": 30,
             "levels": {
                 "min": 10,
                 "max": 40,
             },
             "supply": 27.4,
+            "target": 30,
+            "targetCalc": 29.2,
         },
     }
 

@@ -56,6 +56,8 @@ def test_ventilation_should_return_meta_information_on_root(dependency_mocker):
         "errorCount": 2,
         "filterChange": False,
         "levels": {
+            "active": "two",
+            "activeNo": 2,
             "four": {"active": False, "volumeFlow": "40 m³/h"},
             "one": {"active": False, "volumeFlow": "10 m³/h"},
             "three": {"active": False, "volumeFlow": "30 m³/h"},

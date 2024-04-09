@@ -63,6 +63,11 @@ def get_single_circuit(heatpump: PyViCareHeatPump = Depends(get_single_heatpump)
 def get_circuit(circuit: HeatingCircuit = Depends(get_single_circuit)) -> dict:
     no = circuit.circuit
     program = circuit.getActiveProgram()
+    programs = {
+        program: circuit.service.getProperty(f"heating.circuits.{no}.operating.programs.{program}")["properties"]
+        for program in circuit.getPrograms()
+    }
+
     mode = circuit.getActiveMode()
     return {
         "active": 1 if circuit.getActive() else 0,
@@ -76,15 +81,26 @@ def get_circuit(circuit: HeatingCircuit = Depends(get_single_circuit)) -> dict:
         "modeNo": HeatingCircuitMode.no_of(mode),
         "name": circuit.getName(),
         "pumpActive": 1 if circuit.getCirculationPumpActive() else 0,
-        "program": program,
-        "programNo": HeatingCircuitProgram.no_of(program),
+        "programs": {
+            "active": program,
+            "activeNo": HeatingCircuitProgram.no_of(program),
+        }
+        | {
+            program: {
+                "active": 1 if v["active"]["value"] else 0,
+                "demand": v["demand"]["value"] if "demand" in v else "n/a",
+                "temperature": v["temperature"]["value"] if "temperature" in v else "n/a",
+            }
+            for program, v in programs.items()
+        },
         "temperature": {
-            "target": circuit.service.getProperty(f"heating.circuits.{no}.temperature")["properties"]["value"]["value"],
             "levels": {
                 "min": circuit.getTemperatureLevelsMin(),
                 "max": circuit.getTemperatureLevelsMax(),
             },
             "supply": circuit.getSupplyTemperature(),
+            "target": circuit.service.getProperty(f"heating.circuits.{no}.temperature")["properties"]["value"]["value"],
+            "targetCalc": circuit.getTargetSupplyTemperature(),
         },
     }
 
