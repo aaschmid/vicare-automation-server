@@ -6,6 +6,10 @@ class Settings(BaseSettings):
     email: str
     password: str
 
+    loxone_url: str
+    loxone_user: str
+    loxone_password: str
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     def __hash__(self):

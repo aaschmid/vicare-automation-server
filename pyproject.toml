@@ -27,7 +27,7 @@ fastapi = "^0.105.0"
 uvicorn = "^0.25.0"
 pydantic-settings = "^2.1.0"
 pyvicare = "^2.32.0"
-requests = "^2.31.0" # required for pyvicare - don't know why it is not included automatically
+requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.1"

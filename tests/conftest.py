@@ -32,7 +32,15 @@ def check_args(args) -> (FastAPI, Dict):
 def dependency_mocker(request: SubRequest) -> MagicMock:
     app, setting_values = check_args(request.param)
 
-    settings = {"email": "test@example.com", "password": "password", "client_id": "test_client", **setting_values}
+    settings = {
+        "email": "test@example.com",
+        "password": "password",
+        "client_id": "test_client",
+        "loxone_url": "http://127.0.0.1",
+        "loxone_user": "user",
+        "loxone_password": "password",
+        **setting_values,
+    }
     app.dependency_overrides[get_settings] = lambda: namedtuple("Settings", settings.keys())(*settings.values())
 
     vicare: PyViCare = MagicMock()
