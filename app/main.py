@@ -12,14 +12,13 @@ from PyViCare.PyViCareUtils import (
 from starlette import status
 from starlette.responses import PlainTextResponse
 
-from app.api import circuit, dhw, health, heatpump, loxone, ventilation
+from app.api import circuit, dhw, health, heatpump, ventilation
 
 app = FastAPI()
 app.include_router(circuit.router)
 app.include_router(dhw.router)
 app.include_router(health.router)
 app.include_router(heatpump.router)
-app.include_router(loxone.router)
 app.include_router(ventilation.router)
 
 
