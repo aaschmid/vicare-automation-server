@@ -25,7 +25,6 @@ def test_heating_dhw_get_should_return_current_status(dependency_mocker):
             getOneTimeCharge=lambda: False,
             getDomesticHotWaterCirculationPumpActive=lambda: True,
             getDomesticHotWaterCirculationMode=lambda: "10/25-cycle",
-            getDomesticHotWaterPumpActive=lambda: False,
             getDomesticHotWaterActive=lambda: True,
             getDomesticHotWaterStorageTemperature=lambda: 40.5,
         ),
@@ -47,7 +46,6 @@ def test_heating_dhw_get_should_return_current_status(dependency_mocker):
         "pumps": {
             "circulationActive": 1,
             "mode": "10/25-cycle",
-            "primaryActive": 0,
         },
         "storageTemperature": 40.5,
     }

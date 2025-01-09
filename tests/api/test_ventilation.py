@@ -17,18 +17,18 @@ def test_ventilation_should_return_meta_information_on_root(dependency_mocker):
         "device.messages.errors.raw": {"properties": {"entries": {"value": ["error 1", "error 2"]}}},
         "device.productIdentification": {"properties": {"product": {"value": "pId1"}}},
         "ventilation.operating.modes.filterChange": {"properties": {"active": {"value": False}}},
-        "ventilation.operating.programs.levelOne": {
-            "properties": {"active": {"value": False}, "volumeFlow": {"value": 10, "unit": "m³/h"}}
+        "ventilation.operating.modes.permanent": {
+            "commands": {
+                "setLevel": {
+                    "params": {"level": {"constraints": {"enum": ["levelOne", "levelTwo", "levelThree", "levelFour"]}}}
+                }
+            }
         },
-        "ventilation.operating.programs.levelTwo": {
-            "properties": {"active": {"value": True}, "volumeFlow": {"value": 20, "unit": "m³/h"}}
-        },
-        "ventilation.operating.programs.levelThree": {
-            "properties": {"active": {"value": False}, "volumeFlow": {"value": 30, "unit": "m³/h"}}
-        },
-        "ventilation.operating.programs.levelFour": {
-            "properties": {"active": {"value": False}, "volumeFlow": {"value": 40, "unit": "m³/h"}}
-        },
+        "ventilation.operating.state": {"properties": {"level": {"value": "levelTwo"}}},
+        "ventilation.levels.levelOne": {"properties": {"volumeFlow": {"value": 10, "unit": "m³/h"}}},
+        "ventilation.levels.levelTwo": {"properties": {"volumeFlow": {"value": 20, "unit": "m³/h"}}},
+        "ventilation.levels.levelThree": {"properties": {"volumeFlow": {"value": 30, "unit": "m³/h"}}},
+        "ventilation.levels.levelFour": {"properties": {"volumeFlow": {"value": 40, "unit": "m³/h"}}},
     }
     dependency_mocker.devices = [
         PyViCareDeviceConfig(
@@ -58,10 +58,10 @@ def test_ventilation_should_return_meta_information_on_root(dependency_mocker):
         "levels": {
             "active": "two",
             "activeNo": 2,
-            "four": {"active": False, "volumeFlow": "40 m³/h"},
-            "one": {"active": False, "volumeFlow": "10 m³/h"},
-            "three": {"active": False, "volumeFlow": "30 m³/h"},
-            "two": {"active": True, "volumeFlow": "20 m³/h"},
+            "four": {"active": 0, "volumeFlow": "40 m³/h"},
+            "one": {"active": 0, "volumeFlow": "10 m³/h"},
+            "three": {"active": 0, "volumeFlow": "30 m³/h"},
+            "two": {"active": 1, "volumeFlow": "20 m³/h"},
         },
         "status": "online",
     }

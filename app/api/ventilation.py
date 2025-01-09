@@ -25,17 +25,14 @@ def get_single_ventilation(vicare: PyViCare = Depends(dependencies.get_vicare)) 
 
 
 @router.get("")
-def get_ventilation(device: PyViCareDeviceConfig = Depends(get_single_ventilation_device)) -> dict:
-    # TODO: create methods in PyViCare to access properties easier
-    level_strings = ["one", "two", "three", "four"]
-    levels = {
-        level: device.service.getProperty(f"ventilation.operating.programs.level{level.capitalize()}")["properties"]
-        for level in level_strings
-    }
-    active_levels = [level for level, v in levels.items() if v["active"]["value"]]
-    if len(active_levels) != 1:
-        raise HTTPException(status_code=422, detail=f"Couldn't find active level, was {active_levels}.")
-    active_level = active_levels[0]
+def get_ventilation(
+    device: PyViCareDeviceConfig = Depends(get_single_ventilation_device),
+    ventilation: PyViCareVentilationDevice = Depends(get_single_ventilation),
+) -> dict:
+    level_strings = ventilation.getVentilationLevels()
+    levels = {level: device.service.getProperty(f"ventilation.levels.{level}")["properties"] for level in level_strings}
+
+    active_level = ventilation.getVentilationLevel()
 
     errors = device.service.getProperty("device.messages.errors.raw")["properties"]["entries"]["value"]
     filter_change = device.service.getProperty("ventilation.operating.modes.filterChange")["properties"]["active"][
@@ -54,10 +51,11 @@ def get_ventilation(device: PyViCareDeviceConfig = Depends(get_single_ventilatio
         "errors": errors,
         "errorCount": len(errors),
         "filterChange": 1 if filter_change else 0,
-        "levels": {"active": active_level, "activeNo": level_strings.index(active_level) + 1}
+        # strip off `level` from levels
+        "levels": {"active": active_level[5:].lower(), "activeNo": level_strings.index(active_level) + 1}
         | {
-            level: {
-                "active": 1 if v["active"]["value"] else 0,
+            level[5:].lower(): {
+                "active": 1 if level == active_level else 0,
                 "volumeFlow": f"{v['volumeFlow']['value']} {v['volumeFlow']['unit']}",
             }
             for level, v in levels.items()

@@ -38,7 +38,6 @@ def get_dhw(heating: HeatingDevice = Depends(get_single_heating)) -> dict:
         "pumps": {
             "circulationActive": 1 if heating.getDomesticHotWaterCirculationPumpActive() else 0,
             "mode": heating.getDomesticHotWaterCirculationMode(),
-            "primaryActive": 1 if heating.getDomesticHotWaterPumpActive() else 0,
         },
         "storageTemperature": heating.getDomesticHotWaterStorageTemperature(),
     }
