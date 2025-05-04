@@ -14,7 +14,6 @@ client = TestClient(app)
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_ventilation_should_return_meta_information_on_root(dependency_mocker):
     property_map = {
-        "device.messages.errors.raw": {"properties": {"entries": {"value": ["error 1", "error 2"]}}},
         "device.productIdentification": {"properties": {"product": {"value": "pId1"}}},
         "ventilation.operating.modes.filterChange": {"properties": {"active": {"value": False}}},
         "ventilation.operating.modes.permanent": {
@@ -52,8 +51,6 @@ def test_ventilation_should_return_meta_information_on_root(dependency_mocker):
             "productIdentification": "pId1",
             "serial": "test_serial",
         },
-        "errors": ["error 1", "error 2"],
-        "errorCount": 2,
         "filterChange": False,
         "levels": {
             "active": "two",

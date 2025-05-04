@@ -34,7 +34,6 @@ def get_ventilation(
 
     active_level = ventilation.getVentilationLevel()
 
-    errors = device.service.getProperty("device.messages.errors.raw")["properties"]["entries"]["value"]
     filter_change = device.service.getProperty("ventilation.operating.modes.filterChange")["properties"]["active"][
         "value"
     ]
@@ -48,8 +47,6 @@ def get_ventilation(
             ]["value"],
             "serial": device.service.accessor.serial,
         },
-        "errors": errors,
-        "errorCount": len(errors),
         "filterChange": 1 if filter_change else 0,
         # strip off `level` from levels
         "levels": {"active": active_level[5:].lower(), "activeNo": level_strings.index(active_level) + 1}

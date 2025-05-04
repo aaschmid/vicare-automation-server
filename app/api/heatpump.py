@@ -26,7 +26,6 @@ def get_heatpump(
     heatpump: PyViCareHeatPump = Depends(get_single_heatpump),
     compressor: Compressor = Depends(get_single_compressor),
 ) -> dict:
-    errors = device.service.getProperty("device.messages.errors.raw")["properties"]["entries"]["value"]
     return {
         "active": 1 if device.status.lower() == "online" else 0,
         "device": {
@@ -42,8 +41,6 @@ def get_heatpump(
             "phase": compressor.getPhase(),
             "starts": compressor.getStarts(),
         },
-        "errors": errors,
-        "errorCount": len(errors),
         "temperature": {
             "buffer": heatpump.getBufferMainTemperature(),
             "outside": heatpump.getOutsideTemperature(),

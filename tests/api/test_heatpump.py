@@ -11,9 +11,6 @@ client = TestClient(app)
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_heatpump_should_return_meta_information_on_root(dependency_mocker):
-    property_map = {
-        "device.messages.errors.raw": {"properties": {"entries": {"value": ["error x"]}}},
-    }
     dependency_mocker.devices = [
         Mock(
             asHeatPump=lambda: Mock(
@@ -38,7 +35,6 @@ def test_heatpump_should_return_meta_information_on_root(dependency_mocker):
             service=Mock(
                 roles=["type:heatpump"],
                 accessor=Mock(serial="test_serial"),
-                getProperty=lambda p: property_map[p],
             ),
             status="online",
         )
@@ -62,8 +58,6 @@ def test_heatpump_should_return_meta_information_on_root(dependency_mocker):
             "phase": "?",
             "starts": 12,
         },
-        "errors": ["error x"],
-        "errorCount": 1,
         "temperature": {
             "buffer": 21.3,
             "outside": 3.3,
