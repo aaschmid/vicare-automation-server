@@ -48,9 +48,7 @@ def health(response: Response, vicare: PyViCare = Depends(dependencies.get_vicar
     auth_token_status = (
         "invalid"
         if vicare.oauth_manager.oauth_session.token is None
-        else "expired"
-        if vicare.oauth_manager.oauth_session.token.is_expired()
-        else "valid"
+        else "expired" if vicare.oauth_manager.oauth_session.token.is_expired() else "valid"
     )
 
     viessman_api_request_start_time = time.time()

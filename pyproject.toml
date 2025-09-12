@@ -1,47 +1,40 @@
-[tool.poetry]
+[project]
 name = "vicare-automation-server"
 version = "0.1.0"
 description = "A lightwight fast api server, in order to access and manipulate ViCare products"
-license = "MIT"
-authors = ["Andreas Schmid <service@aaschmid.de>"]
+license = {text = "MIT"}
+authors = [{name = "Andreas Schmid", email = "service@aaschmid.de"}]
 readme = "readme.md"
-homepage = "https://github.com/aaschmid/vicare-automation-server"
-repository = "https://github.com/aaschmid/vicare-automation-server"
-packages = [
-  { include = "vicare_automation_server" }
-]
-include = ["LICENSE"]
-keywords = ["packaging", "dependency", "poetry"]
-classifiers = [
-  "Topic :: Home Automation",
-  "Topic :: System :: Monitoring",
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "fastapi>=0.115.6,<0.116.0",
+    "uvicorn>=0.34.0,<0.35.0",
+    "pydantic-settings>=2.7.1,<2.8.0",
+    "pyvicare>=2.40.0,<2.41.0",
+    "requests>=2.32.3,<2.33.0",
 ]
 
-[tool.poetry.urls]
-"Changelog" = "https://github.com/aaschmid/vicare-automation-server/releases"
+[project.optional-dependencies]
+dev = [
+    "black>=23.12.1,<24.0.0",
+    "httpx>=0.26.0,<0.27.0",
+    "isort>=5.13.2,<5.14.0",
+    "mypy>=1.8.0,<1.9.0",
+    "pytest>=7.4.3,<7.5.0",
+    "pytest-cov>=4.1.0,<4.2.0",
+    "pytest-mock>=3.12.0,<3.13.0",
+    "ruff>=0.1.9,<0.2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/aaschmid/vicare-automation-server"
+Repository = "https://github.com/aaschmid/vicare-automation-server"
+Changelog = "https://github.com/aaschmid/vicare-automation-server/releases"
 "Bug Tracker" = "https://github.com/aaschmid/vicare-automation-server/issues"
 
-[tool.poetry.dependencies]
-python = "^3.12"
-fastapi = "^0.115.6"
-uvicorn = "^0.34.0"
-pydantic-settings = "^2.7.1"
-pyvicare = "^2.40.0"
-requests = "^2.32.3"
-
-[tool.poetry.group.dev.dependencies]
-black = "^23.12.1"
-httpx = "^0.26.0"
-isort = "^5.13.2"
-mypy = "^1.8.0"
-pytest = "^7.4.3"
-pytest-cov = "^4.1.0"
-pytest-mock = "^3.12.0"
-ruff = "^0.1.9"
-
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=67.8.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.black]
 line-length = 120

@@ -1,16 +1,13 @@
-FROM python:3.12 as requirement-stage
+# syntax=docker/dockerfile:1
 
-WORKDIR /tmp
-RUN pip install poetry
-COPY ./pyproject.toml ./poetry.lock /tmp/
-RUN poetry self add poetry-plugin-export
-RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
+FROM ghcr.io/astral-sh/uv:0.8.17-python3.8-alpine
 
-FROM python:3.12
-WORKDIR /code
-COPY --from=requirement-stage /tmp/requirements.txt /code/requirements.txt
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
-COPY ./app /code/app
-COPY ./log-config.json /code/
+# Copy the application into the container.
+COPY . /app
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--log-config", "log-config.json"]
+# Install the application dependencies.
+WORKDIR /app
+RUN uv sync --locked --no-cache
+
+# Run the application.
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--log-config", "log-config.json"]
