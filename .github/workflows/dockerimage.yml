@@ -4,9 +4,15 @@ on:
   push:
     branches: [main]
 
+env:
+  REGISTRY: ghcr.io
+
 jobs:
-  dockermages:
+  dockerimages:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       # Setup
       - name: Check out repository
@@ -16,20 +22,31 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Buildx arm64 image
-        run: |
-          docker buildx build \
-          --no-cache \
-          --output type=docker \
-          --platform arm64 \
-          --tag vicare-automation-server \
-          .
-
-      - name: Save arm64 image
-        run: |
-          docker save vicare-automation-server > vicare-automation-server-arm64.tar
-
-      - name: Store Docker images
-        uses: actions/upload-artifact@v4
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          path: vicare-automation-server-*
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push arm64 image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
