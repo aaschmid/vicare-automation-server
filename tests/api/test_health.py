@@ -72,7 +72,7 @@ def test_health_checks_positive(dependency_mocker):
     assert checks.trust_env
 
 
-@pytest.mark.parametrize("dependency_mocker", [(app)], indirect=True)
+@pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_checks_for_expired(dependency_mocker):
     dependency_mocker.oauth_manager.oauth_session.token = Mock(return_value=True)
 
@@ -102,7 +102,7 @@ def test_health_viessmann_api_checks_negative(dependency_mocker):
     assert not api_checks.installations_found
 
 
-@pytest.mark.parametrize("dependency_mocker", [(app)], indirect=True)
+@pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_viessmann_api_checks(dependency_mocker):
     dependency_mocker.oauth_manager.oauth_session.get = Mock(return_value=SimpleNamespace(status_code=200))
     dependency_mocker.installations = [Mock()]

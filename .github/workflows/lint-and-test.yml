@@ -26,11 +26,11 @@ jobs:
 
       # Lint
       - name: Run black
-        run: uv tool run black --check app/
+        run: uv tool run black --check app/ tests/
       - name: Run isort
-        run: uv tool run isort --check --diff app/
+        run: uv tool run isort --check --diff app/ tests/
       - name: Run ruff
-        run: uv tool run ruff check app/
+        run: uv tool run ruff check app/ tests/
 
       # Test
       - name: Run tests
