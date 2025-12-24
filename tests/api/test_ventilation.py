@@ -16,12 +16,20 @@ def test_ventilation_should_return_meta_information_on_root(dependency_mocker):
     property_map = {
         "device.productIdentification": {"properties": {"product": {"value": "pId1"}}},
         "ventilation.operating.modes.filterChange": {"properties": {"active": {"value": False}}},
+        "ventilation.operating.modes.active": {
+            "commands": {"setMode": {"params": {"mode": {"constraints": {"enum": ["permanent", "sensorDriven"]}}}}},
+            "properties": {"value": {"value": "permanent"}},
+        },
         "ventilation.operating.modes.permanent": {
             "commands": {
                 "setLevel": {
                     "params": {"level": {"constraints": {"enum": ["levelOne", "levelTwo", "levelThree", "levelFour"]}}}
                 }
-            }
+            },
+            "properties": {"active": {"value": True}},
+        },
+        "ventilation.operating.modes.sensorDriven": {
+            "properties": {"active": {"value": False}},
         },
         "ventilation.operating.state": {"properties": {"level": {"value": "levelTwo"}}},
         "ventilation.levels.levelOne": {"properties": {"volumeFlow": {"value": 10, "unit": "m³/h"}}},
@@ -59,6 +67,10 @@ def test_ventilation_should_return_meta_information_on_root(dependency_mocker):
             "one": {"active": 0, "volumeFlow": "10 m³/h"},
             "three": {"active": 0, "volumeFlow": "30 m³/h"},
             "two": {"active": 1, "volumeFlow": "20 m³/h"},
+        },
+        "modes": {
+            "permanent": {"active": 1},
+            "sensorDriven": {"active": 0},
         },
         "status": "online",
     }

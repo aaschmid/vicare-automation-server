@@ -57,6 +57,10 @@ def get_ventilation(
             }
             for level, v in levels.items()
         },
+        "modes": {
+            mode: {"active": 1 if ventilation.getVentilationMode(mode) else 0}
+            for mode in ventilation.getVentilationModes()
+        },
         "status": device.status,
     }
 
