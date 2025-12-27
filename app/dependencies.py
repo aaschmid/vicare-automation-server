@@ -4,7 +4,18 @@ from typing import Annotated
 from fastapi import Depends
 from PyViCare.PyViCare import PyViCare
 
+from app.request_tracking import RequestTracker
 from app.settings import Settings
+
+
+@lru_cache()
+def get_request_tracker() -> RequestTracker:
+    """FastAPI dependency to get the request tracker singleton.
+
+    Usage in route handlers:
+        request_tracker: Annotated[RequestTracker, Depends(get_request_tracker)]
+    """
+    return RequestTracker()
 
 
 @lru_cache()
