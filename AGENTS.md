@@ -156,6 +156,7 @@ vicare-automation-server/
 │   │   └── ventilation.py # Ventilation endpoints
 │   ├── dependencies.py   # FastAPI dependencies
 │   ├── main.py          # FastAPI application entry point
+│   ├── request_tracking.py # Request tracking middleware and statistics
 │   └── settings.py      # Application settings
 ├── tests/                # Test suite
 ├── shell.nix            # Nix development environment

@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import Dict
+from typing import Dict, Sequence, Tuple, Union
 from unittest.mock import MagicMock
 
 import pytest
@@ -7,7 +7,8 @@ from _pytest.fixtures import SubRequest
 from fastapi import FastAPI
 from PyViCare import PyViCare
 
-from app.dependencies import get_settings, get_vicare
+from app.dependencies import get_request_tracker, get_settings, get_vicare
+from app.request_tracking import RequestTracker
 
 
 def check_args(args) -> (FastAPI, Dict):
@@ -47,3 +48,40 @@ def dependency_mocker(request: SubRequest) -> MagicMock:
     app.dependency_overrides[get_vicare] = lambda: vicare
 
     return vicare
+
+
+@pytest.fixture
+def request_tracker() -> RequestTracker:
+    """Fixture that provides a reset request tracker for testing."""
+    tracker = get_request_tracker()
+    tracker.reset()
+    return tracker
+
+
+def record_requests(
+    tracker: RequestTracker,
+    requests: Sequence[Union[Tuple[str, int], Tuple[str, int, str | None]]],
+) -> None:
+    """Helper function to record multiple requests in a readable way.
+
+    Args:
+        tracker: The RequestTracker instance to record to
+        requests: List of request tuples. Each tuple can be:
+            - (endpoint, status_code) for successful requests
+            - (endpoint, status_code, message) for failed requests with messages
+
+    Example:
+        record_requests(tracker, [
+            ("/endpoint1", 200),
+            ("/endpoint1", 201),
+            ("/endpoint2", 404, "Not found"),
+            ("/endpoint2", 500, "Server error"),
+        ])
+    """
+    for request_tuple in requests:
+        if len(request_tuple) == 2:
+            endpoint, status_code = request_tuple
+            tracker.record_request(endpoint, status_code, None)
+        else:
+            endpoint, status_code, message = request_tuple
+            tracker.record_request(endpoint, status_code, message)
