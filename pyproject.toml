@@ -1,6 +1,6 @@
 [project]
 name = "vicare-automation-server"
-version = "0.1.0"
+version = "0.2.0"
 description = "A lightwight fast api server, in order to access and manipulate ViCare products"
 license = {text = "MIT"}
 authors = [{name = "Andreas Schmid", email = "service@aaschmid.de"}]
