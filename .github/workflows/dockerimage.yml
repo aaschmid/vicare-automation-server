@@ -7,6 +7,9 @@ on:
       - completed
     branches:
       - main
+  push:
+    tags:
+      - '*'
 
 env:
   REGISTRY: ghcr.io
@@ -14,17 +17,21 @@ env:
 jobs:
   dockerimages:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
     permissions:
       contents: read
       packages: write
     steps:
       # Setup
-      - name: Check out repository
+      - name: Check out repository (workflow_run)
+        if: github.event_name == 'workflow_run'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
           sha: ${{ github.event.workflow_run.head_sha }}
+      - name: Check out repository (push)
+        if: github.event_name == 'push'
+        uses: actions/checkout@v4
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
       - name: Setup Docker Buildx
@@ -43,9 +50,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository }}
           tags: |
-            type=ref,event=branch
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            type=sha
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push arm64 image
