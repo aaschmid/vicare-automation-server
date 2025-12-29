@@ -108,7 +108,7 @@ def _get_error_status_code(auth_token_status: str, last_failure_message: LastFai
     - 8: Uncategorized Error
     - 9-10: Reserved for future error types
     """
-    if auth_token_status != "valid":
+    if auth_token_status == "invalid":
         return 2
     if not last_failure_message:
         return 1
