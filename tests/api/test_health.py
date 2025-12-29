@@ -1,5 +1,7 @@
 import re
-from unittest.mock import Mock
+import time
+from datetime import datetime
+from unittest.mock import Mock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -103,6 +105,7 @@ def test_health_status_code_auth_token_error(dependency_mocker, request_tracker)
 @pytest.mark.parametrize(
     "dependency_mocker, failure_status, expected_code",
     [
+        (app, status.HTTP_200_OK, 1),  # Successful request
         (app, status.HTTP_401_UNAUTHORIZED, 3),  # Authentication Error
         (app, status.HTTP_429_TOO_MANY_REQUESTS, 4),  # Rate Limit Error
         (app, status.HTTP_424_FAILED_DEPENDENCY, 5),  # Invalid Configuration Error
@@ -201,10 +204,12 @@ def test_health_last_failure_none_when_no_failures(dependency_mocker, request_tr
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_includes_last_failure(dependency_mocker, request_tracker):
-    record_requests(
-        request_tracker,
-        [("/test/endpoint", status.HTTP_401_UNAUTHORIZED, "Authentication failed")],
-    )
+    timestamp = time.time() - 55
+    with patch("app.request_tracking.time.time", return_value=timestamp):
+        record_requests(
+            request_tracker,
+            [("/test/endpoint", status.HTTP_401_UNAUTHORIZED, "Authentication failed")],
+        )
 
     response = client.get(ROUTE_PREFIX_HEALTH)
 
@@ -216,6 +221,23 @@ def test_health_includes_last_failure(dependency_mocker, request_tracker):
     assert last_failure.message == "Authentication failed"
     assert last_failure.status_code == status.HTTP_401_UNAUTHORIZED
     assert last_failure.timestamp is not None
+    assert last_failure.timestamp == datetime.fromtimestamp(timestamp).isoformat()
+
+
+@pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
+def test_health_status_code_ignores_expired_failures(dependency_mocker, request_tracker):
+    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    with patch("app.request_tracking.time.time", return_value=(time.time() - (16 * 60))):
+        record_requests(request_tracker, [("/test/endpoint", status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")])
+
+    response = client.get(ROUTE_PREFIX_HEALTH)
+
+    assert response.status_code == 200
+    res = HealthModel(**response.json())
+    assert res.status_code == 1
+    assert res.requests.last_failure_message is not None
+    assert res.requests.last_failure_message.message == "Server error"
+    assert res.requests.last_failure_message.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)

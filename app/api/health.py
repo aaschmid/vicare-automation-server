@@ -1,6 +1,6 @@
 import time
 import typing as t
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Response
@@ -15,6 +15,11 @@ from app.request_tracking import LastFailureMessage, RequestTracker
 start_time = time.time()
 
 ROUTE_PREFIX_HEALTH = "/health"
+
+
+# Failure expiration time: 15 minutes in seconds
+FAILURE_EXPIRATION_SECONDS = 15 * 60
+
 
 router = APIRouter(prefix=ROUTE_PREFIX_HEALTH)
 
@@ -33,7 +38,7 @@ class LastFailureModel(BaseModel):
     endpoint: str
     message: str | None
     status_code: int
-    timestamp: float
+    timestamp: str
 
 
 class RequestsModel(BaseModel):
@@ -75,6 +80,16 @@ def health(
     uptime = str(timedelta(seconds=(time.time() - start_time)))
 
     last_failure = request_tracker.get_last_failure_message()
+    last_failure_model = (
+        None
+        if not last_failure
+        else LastFailureModel(
+            endpoint=last_failure["endpoint"],
+            message=last_failure["message"],
+            status_code=last_failure["status_code"],
+            timestamp=datetime.fromtimestamp(last_failure["timestamp"]).isoformat(),
+        )
+    )
 
     return HealthModel(
         status="UP",
@@ -88,17 +103,19 @@ def health(
         ),
         requests=RequestsModel(
             request_stats=request_tracker.get_statistics(),
-            last_failure_message=last_failure,
+            last_failure_message=last_failure_model,
         ),
     )
 
 
 def _get_error_status_code(auth_token_status: str, last_failure_message: LastFailureMessage | None) -> int:
     """
-    Determine numeric status code (2-10) based on last failure.
+    Determine numeric status code (1-10) based on last failure.
+
+    Failures older than 15 minutes are ignored for status code calculation but still returned in the response.
 
     Status codes:
-    - 1: Online
+    - 1: Online (no failures or failures older than 15 minutes)
     - 2: Invalid authentication token
     - 3: Authentication Error (401)
     - 4: Rate Limit Error (429)
@@ -111,6 +128,10 @@ def _get_error_status_code(auth_token_status: str, last_failure_message: LastFai
     if auth_token_status == "invalid":
         return 2
     if not last_failure_message:
+        return 1
+
+    failure_age = time.time() - last_failure_message["timestamp"]
+    if failure_age > FAILURE_EXPIRATION_SECONDS:
         return 1
 
     failure_status_code = last_failure_message["status_code"]
