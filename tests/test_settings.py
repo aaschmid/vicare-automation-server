@@ -23,16 +23,14 @@ def test_init_settings_using_env_file(change_test_dir) -> None:
     loxone_user = "user"
     loxone_password = "password"
     with Path.open(".env", "w") as f:
-        f.write(
-            f"""\
+        f.write(f"""\
             CLIENT_ID="{client_id}"
             EMAIL="{email}"
             PASSWORD="{password}"
             LOXONE_URL="{loxone_url}"
             LOXONE_USER="{loxone_user}"
             LOXONE_PASSWORD="{loxone_password}"
-        """.strip()
-        )
+        """.strip())
 
     settings = Settings()
 
