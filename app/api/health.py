@@ -17,8 +17,8 @@ start_time = time.time()
 ROUTE_PREFIX_HEALTH = "/health"
 
 
-# Failure expiration time: 15 minutes in seconds
-FAILURE_EXPIRATION_SECONDS = 15 * 60
+# Failure expiration time: 60 minutes in seconds
+FAILURE_EXPIRATION_SECONDS = 60 * 60
 
 
 router = APIRouter(prefix=ROUTE_PREFIX_HEALTH)
@@ -112,10 +112,10 @@ def _get_error_status_code(auth_token_status: str, last_failure_message: LastFai
     """
     Determine numeric status code (1-10) based on last failure.
 
-    Failures older than 15 minutes are ignored for status code calculation but still returned in the response.
+    Failures older than 60 minutes are ignored for status code calculation but still returned in the response.
 
     Status codes:
-    - 1: Online (no failures or failures older than 15 minutes)
+    - 1: Online (no failures or failures older than 60 minutes)
     - 2: Invalid authentication token
     - 3: Authentication Error (401)
     - 4: Rate Limit Error (429)

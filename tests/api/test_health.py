@@ -227,7 +227,7 @@ def test_health_includes_last_failure(dependency_mocker, request_tracker):
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_status_code_ignores_expired_failures(dependency_mocker, request_tracker):
     dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
-    with patch("app.request_tracking.time.time", return_value=(time.time() - (16 * 60))):
+    with patch("app.request_tracking.time.time", return_value=(time.time() - (61 * 60))):
         record_requests(request_tracker, [("/test/endpoint", status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")])
 
     response = client.get(ROUTE_PREFIX_HEALTH)

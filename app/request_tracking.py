@@ -24,14 +24,14 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         return response
 
     @staticmethod
-    def _extract_message(response: Response) -> str | None:
+    def _extract_message(response: Response) -> str:
         if response.status_code >= 400:
             # For `PlainTextResponse` used by exception handlers, `body` is directly accessible
             if isinstance(response, PlainTextResponse):
                 body = response.body
                 if body:
                     return body.decode("utf-8") if isinstance(body, bytes) else str(body)
-        return None
+        return "n/a"
 
 
 class LastFailureMessage(TypedDict):
@@ -50,18 +50,19 @@ class RequestTracker:
         self._counts_by_endpoint: dict[str, Counter[int]] = defaultdict(Counter)
         self._last_failure_message: LastFailureMessage | None = None
 
-    def record_request(self, endpoint: str, status_code: int, message: str | None = None) -> None:
+    def record_request(self, endpoint: str, status_code: int, message: str) -> None:
         """Record a request with its status code, optional message, and endpoint."""
         with self._lock:
             self._counts_by_endpoint[endpoint][status_code] += 1
 
             if status_code < 200 or status_code >= 300:
-                self._last_failure_message = LastFailureMessage(
-                    endpoint=endpoint,
-                    message=message,
-                    status_code=status_code,
-                    timestamp=time.time(),
-                )
+                if self._last_failure_message is None or time.time() - self._last_failure_message["timestamp"] > 3600:
+                    self._last_failure_message = LastFailureMessage(
+                        endpoint=endpoint,
+                        message=message,
+                        status_code=status_code,
+                        timestamp=time.time(),
+                    )
 
     def get_statistics(self) -> dict[str, Any]:
         """Get current request statistics grouped by status code and by endpoint."""
