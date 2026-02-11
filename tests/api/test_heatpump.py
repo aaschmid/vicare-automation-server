@@ -23,7 +23,7 @@ def test_heatpump_should_return_meta_information_on_root(dependency_mocker):
                     )
                 ],
                 getBoilerSerial=lambda: "boiler-serial",
-                getBufferMainTemperature=lambda: 21.3,
+                getBufferTopTemperature=lambda: 21.3,
                 getControllerSerial=lambda: "controller-serial",
                 getOutsideTemperature=lambda: 3.3,
                 getSupplyTemperaturePrimaryCircuit=lambda: 29,

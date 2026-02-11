@@ -42,7 +42,7 @@ def get_heatpump(
             "starts": compressor.getStarts(),
         },
         "temperature": {
-            "buffer": heatpump.getBufferMainTemperature(),
+            "buffer": heatpump.getBufferTopTemperature(),
             "outside": heatpump.getOutsideTemperature(),
             "primaryCircuitSupply": heatpump.getSupplyTemperaturePrimaryCircuit(),
             "return": heatpump.getReturnTemperature(),
