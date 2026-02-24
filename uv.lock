@@ -595,16 +595,16 @@ wheels = [
 
 [[package]]
 name = "pyvicare"
-version = "2.57.0"
+version = "2.58.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "authlib" },
     { name = "deprecated" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/93/b3/f415230b929910e13c7b4f3c262146e41465b0ad10b7c8b95c0a0dcb0f8b/pyvicare-2.57.0.tar.gz", hash = "sha256:66b48dfece913573762a263531b6bc414b5f3d98adde9a253d01146e35d227fa", size = 30257, upload-time = "2026-02-15T12:54:21.86Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4c/b3/32a9234fff3baab23b17a9b1c4848917b21175e427a8e565cbb6c96eac6b/pyvicare-2.58.0.tar.gz", hash = "sha256:34fe8659a851e48d23c04f0be9c4f1d3f9ce5e289081dd3a9cfc4f09446dc73e", size = 31656, upload-time = "2026-02-18T09:43:18.456Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/63/cc/51b95598bb406be4563a0e6afd80e4c2c5b64408a2094d0627de28dc5669/pyvicare-2.57.0-py3-none-any.whl", hash = "sha256:d95feaa4b0fb8d5b12f72424f4cba8508b0edc3670e844fdf54548c70616c88f", size = 39393, upload-time = "2026-02-15T12:54:20.596Z" },
+    { url = "https://files.pythonhosted.org/packages/fa/b2/b2340da1f3baf7a0e78e43922c900f8f3b99daeb8bf44754f2de826f4c2d/pyvicare-2.58.0-py3-none-any.whl", hash = "sha256:259eb9a554ab202b34452d67a58e9c40f1bf5f6e142ea70a9dcde1085029afc7", size = 40787, upload-time = "2026-02-18T09:43:17.4Z" },
 ]
 
 [[package]]
