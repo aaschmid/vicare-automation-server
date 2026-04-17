@@ -7,7 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from starlette import status
 
-from app.api.health import ROUTE_PREFIX_HEALTH, HealthModel
+from app.api.health import FAILURE_EXPIRATION_SECONDS, ROUTE_PREFIX_HEALTH, HealthModel
 from app.main import app
 from tests.conftest import record_requests
 
@@ -117,11 +117,13 @@ def test_health_status_code_auth_token_error(dependency_mocker, request_tracker)
 )
 def test_health_status_code_error_mapping(dependency_mocker, failure_status, expected_code, request_tracker):
     dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
-    record_requests(request_tracker, [("/test/endpoint", failure_status, "Test error message")])
+    with patch("app.request_tracking.time.time", return_value=(time.time() - (FAILURE_EXPIRATION_SECONDS + 10))):
+        record_requests(request_tracker, [("/test/endpoint", failure_status, "Test error message")])
 
     response = client.get(ROUTE_PREFIX_HEALTH)
 
-    assert response.status_code == 200
+    expected_http_status = status.HTTP_503_SERVICE_UNAVAILABLE if failure_status >= 400 else status.HTTP_200_OK
+    assert response.status_code == expected_http_status
     res = HealthModel(**response.json())
     assert res.status_code == expected_code
 
@@ -225,14 +227,29 @@ def test_health_includes_last_failure(dependency_mocker, request_tracker):
 
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
-def test_health_status_code_ignores_expired_failures(dependency_mocker, request_tracker):
+def test_health_status_code_shows_error_for_persistent_failures(dependency_mocker, request_tracker):
     dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
-    with patch("app.request_tracking.time.time", return_value=(time.time() - (61 * 60))):
+    with patch("app.request_tracking.time.time", return_value=(time.time() - (FAILURE_EXPIRATION_SECONDS + 10))):
         record_requests(request_tracker, [("/test/endpoint", status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")])
 
     response = client.get(ROUTE_PREFIX_HEALTH)
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+    res = HealthModel(**response.json())
+    assert res.status_code == 7
+    assert res.requests.last_failure_message is not None
+    assert res.requests.last_failure_message.message == "Server error"
+    assert res.requests.last_failure_message.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+@pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
+def test_health_status_code_ignores_recent_failures(dependency_mocker, request_tracker):
+    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    record_requests(request_tracker, [("/test/endpoint", status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")])
+
+    response = client.get(ROUTE_PREFIX_HEALTH)
+
+    assert response.status_code == status.HTTP_200_OK
     res = HealthModel(**response.json())
     assert res.status_code == 1
     assert res.requests.last_failure_message is not None

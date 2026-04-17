@@ -17,8 +17,8 @@ start_time = time.time()
 ROUTE_PREFIX_HEALTH = "/health"
 
 
-# Failure expiration time: 60 minutes in seconds
-FAILURE_EXPIRATION_SECONDS = 60 * 60
+# Failure expiration time: 30 minutes in seconds
+FAILURE_EXPIRATION_SECONDS = 30 * 60
 
 
 router = APIRouter(prefix=ROUTE_PREFIX_HEALTH)
@@ -91,6 +91,9 @@ def health(
         )
     )
 
+    if last_failure and (time.time() - last_failure["timestamp"]) > FAILURE_EXPIRATION_SECONDS:
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+
     return HealthModel(
         status="UP",
         status_code=_get_error_status_code(auth_token_status, last_failure),
@@ -112,10 +115,11 @@ def _get_error_status_code(auth_token_status: str, last_failure_message: LastFai
     """
     Determine numeric status code (1-10) based on last failure.
 
-    Failures older than 60 minutes are ignored for status code calculation but still returned in the response.
+    Failures newer than `FAILURE_EXPIRATION_SECONDS` are ignored for status code calculation (give ViCare time to recover).
+    Only persistent failures older than that affect the status code.
 
     Status codes:
-    - 1: Online (no failures or failures older than 60 minutes)
+    - 1: Online (no failures or failures newer than `FAILURE_EXPIRATION_SECONDS` minutes)
     - 2: Invalid authentication token
     - 3: Authentication Error (401)
     - 4: Rate Limit Error (429)
@@ -131,7 +135,7 @@ def _get_error_status_code(auth_token_status: str, last_failure_message: LastFai
         return 1
 
     failure_age = time.time() - last_failure_message["timestamp"]
-    if failure_age > FAILURE_EXPIRATION_SECONDS:
+    if failure_age < FAILURE_EXPIRATION_SECONDS:
         return 1
 
     failure_status_code = last_failure_message["status_code"]
