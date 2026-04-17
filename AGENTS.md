@@ -98,6 +98,25 @@ tests/
   conftest.py    # Shared fixtures
 ```
 
+## Versioning
+
+To create a new version:
+
+1. Determine version bump based on changes:
+   - **Patch** (0.3.1): Bug fixes, minor improvements
+   - **Minor** (0.4.0): New features, backwards compatible
+   - **Major** (1.0.0): Breaking changes
+
+2. Update `version` in `pyproject.toml`
+
+3. Sync dependencies and commit:
+   ```bash
+   uv sync --all-extras --dev
+   git add pyproject.toml uv.lock
+   git commit -m "Next version X.Y.Z"
+   git tag vX.Y.Z
+   ```
+
 ## Environment Variables
 
 Required in `.env`:
