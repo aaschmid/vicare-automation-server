@@ -10,7 +10,7 @@ dependencies = [
     "fastapi>=0.115.6,<1.0.0",
     "uvicorn>=0.34.0,<1.0.0",
     "pydantic-settings>=2.7.1,<3.0.0",
-    "pyvicare>=2.40.0,<3.0.0",
+    "pyvicare>=2.59.1,<3.0.0",
     "requests>=2.32.3,<3.0.0",
 ]
 
