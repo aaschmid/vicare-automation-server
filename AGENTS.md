@@ -30,6 +30,8 @@ uv run mypy app
 
 ## Code Style Guidelines
 
+Do minimal necessary changes and don't touch anything not required to fulfill the current task.
+
 ### Imports
 - Standard library imports first, then third-party, then local (app.*)
 - Use `import typing as t` for type-only imports

@@ -117,12 +117,14 @@ def test_health_status_code_auth_token_error(dependency_mocker, request_tracker)
 )
 def test_health_status_code_error_mapping(dependency_mocker, failure_status, expected_code, request_tracker):
     dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    with patch("app.request_tracking.time.time", return_value=(time.time() - (FAILURE_EXPIRATION_SECONDS + 11))):
+        record_requests(request_tracker, [("/test/endpoint", status.HTTP_200_OK, "First message")])
     with patch("app.request_tracking.time.time", return_value=(time.time() - (FAILURE_EXPIRATION_SECONDS + 10))):
         record_requests(request_tracker, [("/test/endpoint", failure_status, "Test error message")])
 
     response = client.get(ROUTE_PREFIX_HEALTH)
 
-    expected_http_status = status.HTTP_503_SERVICE_UNAVAILABLE if failure_status >= 400 else status.HTTP_200_OK
+    expected_http_status = status.HTTP_200_OK
     assert response.status_code == expected_http_status
     res = HealthModel(**response.json())
     assert res.status_code == expected_code
@@ -205,6 +207,25 @@ def test_health_last_failure_none_when_no_failures(dependency_mocker, request_tr
 
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
+def test_health_includes_last_success(dependency_mocker, request_tracker):
+    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+
+    timestamp = time.time() - 10
+    with patch("app.request_tracking.time.time", return_value=timestamp):
+        record_requests(request_tracker, [("/test/endpoint", status.HTTP_200_OK)])
+
+    response = client.get(ROUTE_PREFIX_HEALTH)
+
+    assert response.status_code == status.HTTP_200_OK
+    res = HealthModel(**response.json())
+    assert res.requests.last_failure_message is None
+    assert res.requests.last_success_message is not None
+    assert res.requests.last_success_message.endpoint == "/test/endpoint"
+    assert res.requests.last_success_message.status_code == status.HTTP_200_OK
+    assert res.requests.last_success_message.timestamp == datetime.fromtimestamp(timestamp).isoformat()
+
+
+@pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_includes_last_failure(dependency_mocker, request_tracker):
     timestamp = time.time() - 55
     with patch("app.request_tracking.time.time", return_value=timestamp):
@@ -229,12 +250,14 @@ def test_health_includes_last_failure(dependency_mocker, request_tracker):
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_status_code_shows_error_for_persistent_failures(dependency_mocker, request_tracker):
     dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    with patch("app.request_tracking.time.time", return_value=(time.time() - (FAILURE_EXPIRATION_SECONDS + 11))):
+        record_requests(request_tracker, [("/test/endpoint", status.HTTP_200_OK, "First message")])
     with patch("app.request_tracking.time.time", return_value=(time.time() - (FAILURE_EXPIRATION_SECONDS + 10))):
         record_requests(request_tracker, [("/test/endpoint", status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")])
 
     response = client.get(ROUTE_PREFIX_HEALTH)
 
-    assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+    assert response.status_code == status.HTTP_200_OK
     res = HealthModel(**response.json())
     assert res.status_code == 7
     assert res.requests.last_failure_message is not None
@@ -245,6 +268,7 @@ def test_health_status_code_shows_error_for_persistent_failures(dependency_mocke
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_status_code_ignores_recent_failures(dependency_mocker, request_tracker):
     dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    record_requests(request_tracker, [("/test/endpoint", status.HTTP_200_OK, "First message")])
     record_requests(request_tracker, [("/test/endpoint", status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")])
 
     response = client.get(ROUTE_PREFIX_HEALTH)
@@ -255,6 +279,79 @@ def test_health_status_code_ignores_recent_failures(dependency_mocker, request_t
     assert res.requests.last_failure_message is not None
     assert res.requests.last_failure_message.message == "Server error"
     assert res.requests.last_failure_message.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+@pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
+def test_health_last_success_overwrites_older_success(dependency_mocker, request_tracker):
+    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+
+    record_requests(request_tracker, [("/old/endpoint", status.HTTP_200_OK)])
+    record_requests(request_tracker, [("/new/endpoint", status.HTTP_204_NO_CONTENT)])
+
+    response = client.get(ROUTE_PREFIX_HEALTH)
+
+    assert response.status_code == status.HTTP_200_OK
+    res = HealthModel(**response.json())
+    assert res.requests.last_success_message is not None
+    assert res.requests.last_success_message.endpoint == "/new/endpoint"
+    assert res.requests.last_success_message.status_code == status.HTTP_204_NO_CONTENT
+
+
+@pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
+def test_health_status_code_recent_success_overrides_old_failure(dependency_mocker, request_tracker):
+    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+
+    old_failure_timestamp = time.time() - (FAILURE_EXPIRATION_SECONDS + 10)
+    with patch("app.request_tracking.time.time", return_value=old_failure_timestamp):
+        record_requests(request_tracker, [("/old/endpoint", status.HTTP_500_INTERNAL_SERVER_ERROR, "Old server error")])
+
+    recent_success_timestamp = time.time() - 10
+    with patch("app.request_tracking.time.time", return_value=recent_success_timestamp):
+        record_requests(request_tracker, [("/new/endpoint", status.HTTP_200_OK)])
+
+    response = client.get(ROUTE_PREFIX_HEALTH)
+
+    assert response.status_code == status.HTTP_200_OK
+    res = HealthModel(**response.json())
+    assert res.status_code == 1
+    assert res.requests.last_success_message is not None
+    assert res.requests.last_failure_message is not None
+    assert res.requests.last_failure_message.message == "Old server error"
+
+
+@pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
+def test_health_status_code_no_recent_success_shows_persistent_error(dependency_mocker, request_tracker):
+    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    with patch("app.request_tracking.time.time", return_value=(time.time() - (FAILURE_EXPIRATION_SECONDS + 11))):
+        record_requests(request_tracker, [("/test/endpoint", status.HTTP_200_OK, "First message")])
+
+    failure_timestamp = time.time() - (FAILURE_EXPIRATION_SECONDS + 10)
+    with patch("app.request_tracking.time.time", return_value=failure_timestamp):
+        record_requests(request_tracker, [("/test/endpoint", status.HTTP_401_UNAUTHORIZED, "Auth failed")])
+
+    response = client.get(ROUTE_PREFIX_HEALTH)
+
+    assert response.status_code == status.HTTP_200_OK
+    res = HealthModel(**response.json())
+    assert res.status_code == 3
+    assert res.requests.last_success_message is not None
+    assert res.requests.last_failure_message is not None
+    assert res.requests.last_failure_message.message == "Auth failed"
+    assert res.requests.last_failure_message.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
+def test_health_last_success_is_none_when_no_successes(dependency_mocker, request_tracker):
+    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+
+    record_requests(request_tracker, [("/test/endpoint", status.HTTP_500_INTERNAL_SERVER_ERROR)])
+
+    response = client.get(ROUTE_PREFIX_HEALTH)
+
+    assert response.status_code == status.HTTP_200_OK
+    res = HealthModel(**response.json())
+    assert res.status_code == 8
+    assert res.requests.last_success_message is None
 
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)

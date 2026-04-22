@@ -34,11 +34,14 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
         return "n/a"
 
 
-class LastFailureMessage(TypedDict):
+class LastSuccessMessage(TypedDict):
     endpoint: str
-    message: str
     status_code: int
     timestamp: float
+
+
+class LastFailureMessage(LastSuccessMessage):
+    message: str | None
 
 
 class RequestTracker:
@@ -48,6 +51,7 @@ class RequestTracker:
         self._lock = threading.Lock()
         # Track counts by endpoint: {endpoint: {status_code: count}}
         self._counts_by_endpoint: dict[str, Counter[int]] = defaultdict(Counter)
+        self._last_success_message: LastSuccessMessage | None = None
         self._last_failure_message: LastFailureMessage | None = None
 
     def record_request(self, endpoint: str, status_code: int, message: str) -> None:
@@ -56,13 +60,18 @@ class RequestTracker:
             self._counts_by_endpoint[endpoint][status_code] += 1
 
             if status_code < 200 or status_code >= 300:
-                if self._last_failure_message is None or time.time() - self._last_failure_message["timestamp"] > 3600:
-                    self._last_failure_message = LastFailureMessage(
-                        endpoint=endpoint,
-                        message=message,
-                        status_code=status_code,
-                        timestamp=time.time(),
-                    )
+                self._last_failure_message = LastFailureMessage(
+                    endpoint=endpoint,
+                    message=message,
+                    status_code=status_code,
+                    timestamp=time.time(),
+                )
+            else:
+                self._last_success_message = LastSuccessMessage(
+                    endpoint=endpoint,
+                    status_code=status_code,
+                    timestamp=time.time(),
+                )
 
     def get_statistics(self) -> dict[str, Any]:
         """Get current request statistics grouped by status code and by endpoint."""
@@ -89,6 +98,16 @@ class RequestTracker:
             "by_endpoint": counts_by_endpoint,
         }
 
+    def get_last_success_message(self) -> LastSuccessMessage | None:
+        """Get the last success message.
+
+        Optimized to minimize lock time: quickly copies the failure dict inside the lock.
+        """
+        with self._lock:
+            if self._last_success_message is None:
+                return None
+            return LastSuccessMessage(**self._last_success_message)
+
     def get_last_failure_message(self) -> LastFailureMessage | None:
         """Get the last failure message.
 
@@ -103,4 +122,5 @@ class RequestTracker:
         """Reset all statistics (mainly for testing)."""
         with self._lock:
             self._counts_by_endpoint.clear()
+            self._last_success_message = None
             self._last_failure_message = None

@@ -9,7 +9,7 @@ from PyViCare.PyViCare import PyViCare
 from starlette import status
 
 from app import dependencies
-from app.request_tracking import LastFailureMessage, RequestTracker
+from app.request_tracking import LastFailureMessage, LastSuccessMessage, RequestTracker
 
 # TODO maybe use basic auth? configured?
 start_time = time.time()
@@ -34,15 +34,19 @@ class ChecksModel(BaseModel):
     trust_env: bool
 
 
-class LastFailureModel(BaseModel):
+class LastSuccessModel(BaseModel):
     endpoint: str
-    message: str | None
     status_code: int
     timestamp: str
 
 
+class LastFailureModel(LastSuccessModel):
+    message: str | None
+
+
 class RequestsModel(BaseModel):
     request_stats: dict[str, t.Any]
+    last_success_message: LastSuccessModel | None
     last_failure_message: LastFailureModel | None
 
 
@@ -79,6 +83,17 @@ def health(
 
     uptime = str(timedelta(seconds=(time.time() - start_time)))
 
+    last_success = request_tracker.get_last_success_message()
+    last_success_model = (
+        None
+        if not last_success
+        else LastSuccessModel(
+            endpoint=last_success["endpoint"],
+            status_code=last_success["status_code"],
+            timestamp=datetime.fromtimestamp(last_success["timestamp"]).isoformat(),
+        )
+    )
+
     last_failure = request_tracker.get_last_failure_message()
     last_failure_model = (
         None
@@ -91,12 +106,9 @@ def health(
         )
     )
 
-    if last_failure and (time.time() - last_failure["timestamp"]) > FAILURE_EXPIRATION_SECONDS:
-        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-
     return HealthModel(
         status="UP",
-        status_code=_get_error_status_code(auth_token_status, last_failure),
+        status_code=_get_error_status_code(auth_token_status, last_success, last_failure),
         uptime=uptime,
         checks=ChecksModel(
             auth_token=auth_token_status,
@@ -106,12 +118,17 @@ def health(
         ),
         requests=RequestsModel(
             request_stats=request_tracker.get_statistics(),
+            last_success_message=last_success_model,
             last_failure_message=last_failure_model,
         ),
     )
 
 
-def _get_error_status_code(auth_token_status: str, last_failure_message: LastFailureMessage | None) -> int:
+def _get_error_status_code(
+    auth_token_status: str,
+    last_success_message: LastSuccessMessage | None,
+    last_failure_message: LastFailureMessage | None,
+) -> int:
     """
     Determine numeric status code (1-10) based on last failure.
 
@@ -131,11 +148,15 @@ def _get_error_status_code(auth_token_status: str, last_failure_message: LastFai
     """
     if auth_token_status == "invalid":
         return 2
+    if not last_success_message:
+        return 8
     if not last_failure_message:
         return 1
 
+    success_age = time.time() - last_success_message["timestamp"]
     failure_age = time.time() - last_failure_message["timestamp"]
-    if failure_age < FAILURE_EXPIRATION_SECONDS:
+
+    if success_age < failure_age or failure_age < FAILURE_EXPIRATION_SECONDS:
         return 1
 
     failure_status_code = last_failure_message["status_code"]
