@@ -125,15 +125,15 @@ def test_heatpump_circuit_set_mode_should_forward_call_correctly(dependency_mock
 @pytest.mark.parametrize(
     "dependency_mocker, program, command, expected",
     [
-        (app, "unknown", HeatingCommand.Activate.value, status.HTTP_422_UNPROCESSABLE_ENTITY),
+        (app, "unknown", HeatingCommand.Activate.value, status.HTTP_422_UNPROCESSABLE_CONTENT),
         (
             app,
             HeatingCircuitProgram.Normal.value,
             HeatingCommand.Deactivate.value,
             status.HTTP_405_METHOD_NOT_ALLOWED,
         ),
-        (app, HeatingCircuitProgram.Default.value, None, status.HTTP_422_UNPROCESSABLE_ENTITY),
-        (app, HeatingCircuitProgram.Default.value, "unknown", status.HTTP_422_UNPROCESSABLE_ENTITY),
+        (app, HeatingCircuitProgram.Default.value, None, status.HTTP_422_UNPROCESSABLE_CONTENT),
+        (app, HeatingCircuitProgram.Default.value, "unknown", status.HTTP_422_UNPROCESSABLE_CONTENT),
         (
             app,
             HeatingCircuitProgram.Default.value,
@@ -204,7 +204,7 @@ def test_heatpump_circuit_set_program_should_forward_call_correctly(
 @pytest.mark.parametrize(
     "dependency_mocker, program, temperature, expected",
     [
-        (app, "unknown", 23, status.HTTP_422_UNPROCESSABLE_ENTITY),
+        (app, "unknown", 23, status.HTTP_422_UNPROCESSABLE_CONTENT),
         (
             app,
             HeatingCircuitProgram.Eco.value,
@@ -215,10 +215,10 @@ def test_heatpump_circuit_set_program_should_forward_call_correctly(
             app,
             HeatingCircuitProgram.Comfort.value,
             -1,
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
         ),
-        (app, HeatingCircuitProgram.Normal.value, 9, status.HTTP_422_UNPROCESSABLE_ENTITY),
-        (app, HeatingCircuitProgram.Reduced.value, 31, status.HTTP_422_UNPROCESSABLE_ENTITY),
+        (app, HeatingCircuitProgram.Normal.value, 9, status.HTTP_422_UNPROCESSABLE_CONTENT),
+        (app, HeatingCircuitProgram.Reduced.value, 31, status.HTTP_422_UNPROCESSABLE_CONTENT),
     ],
     indirect=["dependency_mocker"],
 )

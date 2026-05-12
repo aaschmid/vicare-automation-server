@@ -119,8 +119,8 @@ def test_ventilation_set_mode_permanent(dependency_mocker, level: int, expected:
 @pytest.mark.parametrize(
     "dependency_mocker, level, expected",
     [
-        (app, -1, status.HTTP_422_UNPROCESSABLE_ENTITY),
-        (app, 101, status.HTTP_422_UNPROCESSABLE_ENTITY),
+        (app, -1, status.HTTP_422_UNPROCESSABLE_CONTENT),
+        (app, 101, status.HTTP_422_UNPROCESSABLE_CONTENT),
     ],
     indirect=["dependency_mocker"],
 )

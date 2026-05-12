@@ -54,8 +54,8 @@ def test_heating_dhw_get_should_return_current_status(dependency_mocker):
 @pytest.mark.parametrize(
     "dependency_mocker, command, expected",
     [
-        (app, None, status.HTTP_422_UNPROCESSABLE_ENTITY),
-        (app, "unknown", status.HTTP_422_UNPROCESSABLE_ENTITY),
+        (app, None, status.HTTP_422_UNPROCESSABLE_CONTENT),
+        (app, "unknown", status.HTTP_422_UNPROCESSABLE_CONTENT),
     ],
     indirect=["dependency_mocker"],
 )
@@ -97,10 +97,10 @@ def test_heating_dhw_one_time_change_should_forward_deactivation_call_correctly(
 @pytest.mark.parametrize(
     "dependency_mocker, level, temperature, expected",
     [
-        (app, "unknown", 23, status.HTTP_422_UNPROCESSABLE_ENTITY),
-        (app, HeatingDomesticHotWaterLevel.Temp2.name, -1, status.HTTP_422_UNPROCESSABLE_ENTITY),
-        (app, HeatingDomesticHotWaterLevel.Main.name, 9, status.HTTP_422_UNPROCESSABLE_ENTITY),
-        (app, HeatingDomesticHotWaterLevel.Temp2.name, 31, status.HTTP_422_UNPROCESSABLE_ENTITY),
+        (app, "unknown", 23, status.HTTP_422_UNPROCESSABLE_CONTENT),
+        (app, HeatingDomesticHotWaterLevel.Temp2.name, -1, status.HTTP_422_UNPROCESSABLE_CONTENT),
+        (app, HeatingDomesticHotWaterLevel.Main.name, 9, status.HTTP_422_UNPROCESSABLE_CONTENT),
+        (app, HeatingDomesticHotWaterLevel.Temp2.name, 31, status.HTTP_422_UNPROCESSABLE_CONTENT),
     ],
     indirect=["dependency_mocker"],
 )
