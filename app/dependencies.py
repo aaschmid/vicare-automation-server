@@ -1,7 +1,10 @@
+import asyncio
 from functools import lru_cache
-from typing import Annotated
+from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends
+from pyatv import Protocol, conf, connect
+from pyatv.interface import AppleTV
 from PyViCare.PyViCare import PyViCare
 
 from app.request_tracking import RequestTracker
@@ -29,3 +32,21 @@ def get_vicare(settings: Annotated[Settings, Depends(get_settings)]) -> PyViCare
     vicare.setCacheDuration(120)
     vicare.initWithCredentials(settings.email, settings.password, settings.client_id, "vicare.token")
     return vicare
+
+
+async def get_appletv(settings: Annotated[Settings, Depends(get_settings)]) -> AsyncGenerator[AppleTV | None]:
+    loop = asyncio.get_running_loop()
+
+    config = conf.AppleTV(settings.appletv_host, "Unknown")
+    config.add_service(
+        conf.ManualService(
+            settings.appletv_companion_identifier,
+            Protocol.Companion,
+            settings.appletv_companion_port,
+            {},
+            credentials=settings.appletv_companion_credentials,
+        )
+    )
+    atv = await connect(config, loop)
+    yield atv
+    atv.close()

@@ -43,9 +43,9 @@ def test_health_general_result(dependency_mocker):
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_checks_negative(dependency_mocker):
-    dependency_mocker.oauth_manager.oauth_session.token = None
-    dependency_mocker.oauth_manager.oauth_session.session = None
-    dependency_mocker.oauth_manager.oauth_session.trust_env = False
+    dependency_mocker.vicare.oauth_manager.oauth_session.token = None
+    dependency_mocker.vicare.oauth_manager.oauth_session.session = None
+    dependency_mocker.vicare.oauth_manager.oauth_session.trust_env = False
 
     response = client.get(ROUTE_PREFIX_HEALTH)
 
@@ -61,10 +61,10 @@ def test_health_checks_negative(dependency_mocker):
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_checks_positive(dependency_mocker):
-    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
-    dependency_mocker.oauth_manager.oauth_session.session = Mock()
-    dependency_mocker.oauth_manager.oauth_session.trust_env = True
-    dependency_mocker.installations = [Mock(), Mock(), Mock()]
+    dependency_mocker.vicare.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    dependency_mocker.vicare.oauth_manager.oauth_session.session = Mock()
+    dependency_mocker.vicare.oauth_manager.oauth_session.trust_env = True
+    dependency_mocker.vicare.installations = [Mock(), Mock(), Mock()]
 
     response = client.get(ROUTE_PREFIX_HEALTH)
 
@@ -80,7 +80,7 @@ def test_health_checks_positive(dependency_mocker):
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_checks_for_expired(dependency_mocker):
-    dependency_mocker.oauth_manager.oauth_session.token = Mock(return_value=True)
+    dependency_mocker.vicare.oauth_manager.oauth_session.token = Mock(return_value=True)
 
     response = client.get(ROUTE_PREFIX_HEALTH)
 
@@ -93,7 +93,7 @@ def test_health_checks_for_expired(dependency_mocker):
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_status_code_auth_token_error(dependency_mocker, request_tracker):
-    dependency_mocker.oauth_manager.oauth_session.token = None
+    dependency_mocker.vicare.oauth_manager.oauth_session.token = None
 
     response = client.get(ROUTE_PREFIX_HEALTH)
 
@@ -116,7 +116,7 @@ def test_health_status_code_auth_token_error(dependency_mocker, request_tracker)
     indirect=["dependency_mocker"],
 )
 def test_health_status_code_error_mapping(dependency_mocker, failure_status, expected_code, request_tracker):
-    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    dependency_mocker.vicare.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
     with patch("app.request_tracking.time.time", return_value=(time.time() - (FAILURE_EXPIRATION_SECONDS + 11))):
         record_requests(request_tracker, [("/test/endpoint", status.HTTP_200_OK, "First message")])
     with patch("app.request_tracking.time.time", return_value=(time.time() - (FAILURE_EXPIRATION_SECONDS + 10))):
@@ -208,7 +208,7 @@ def test_health_last_failure_none_when_no_failures(dependency_mocker, request_tr
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_includes_last_success(dependency_mocker, request_tracker):
-    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    dependency_mocker.vicare.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
 
     timestamp = time.time() - 10
     with patch("app.request_tracking.time.time", return_value=timestamp):
@@ -249,7 +249,7 @@ def test_health_includes_last_failure(dependency_mocker, request_tracker):
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_status_code_shows_error_for_persistent_failures(dependency_mocker, request_tracker):
-    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    dependency_mocker.vicare.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
     with patch("app.request_tracking.time.time", return_value=(time.time() - (FAILURE_EXPIRATION_SECONDS + 11))):
         record_requests(request_tracker, [("/test/endpoint", status.HTTP_200_OK, "First message")])
     with patch("app.request_tracking.time.time", return_value=(time.time() - (FAILURE_EXPIRATION_SECONDS + 10))):
@@ -267,7 +267,7 @@ def test_health_status_code_shows_error_for_persistent_failures(dependency_mocke
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_status_code_ignores_recent_failures(dependency_mocker, request_tracker):
-    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    dependency_mocker.vicare.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
     record_requests(request_tracker, [("/test/endpoint", status.HTTP_200_OK, "First message")])
     record_requests(request_tracker, [("/test/endpoint", status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")])
 
@@ -283,7 +283,7 @@ def test_health_status_code_ignores_recent_failures(dependency_mocker, request_t
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_last_success_overwrites_older_success(dependency_mocker, request_tracker):
-    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    dependency_mocker.vicare.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
 
     record_requests(request_tracker, [("/old/endpoint", status.HTTP_200_OK)])
     record_requests(request_tracker, [("/new/endpoint", status.HTTP_204_NO_CONTENT)])
@@ -299,7 +299,7 @@ def test_health_last_success_overwrites_older_success(dependency_mocker, request
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_status_code_recent_success_overrides_old_failure(dependency_mocker, request_tracker):
-    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    dependency_mocker.vicare.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
 
     old_failure_timestamp = time.time() - (FAILURE_EXPIRATION_SECONDS + 10)
     with patch("app.request_tracking.time.time", return_value=old_failure_timestamp):
@@ -321,7 +321,7 @@ def test_health_status_code_recent_success_overrides_old_failure(dependency_mock
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_status_code_no_recent_success_shows_persistent_error(dependency_mocker, request_tracker):
-    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    dependency_mocker.vicare.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
     with patch("app.request_tracking.time.time", return_value=(time.time() - (FAILURE_EXPIRATION_SECONDS + 11))):
         record_requests(request_tracker, [("/test/endpoint", status.HTTP_200_OK, "First message")])
 
@@ -342,7 +342,7 @@ def test_health_status_code_no_recent_success_shows_persistent_error(dependency_
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_health_last_success_is_none_when_no_successes(dependency_mocker, request_tracker):
-    dependency_mocker.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
+    dependency_mocker.vicare.oauth_manager.oauth_session.token.is_expired = Mock(return_value=False)
 
     record_requests(request_tracker, [("/test/endpoint", status.HTTP_500_INTERNAL_SERVER_ERROR)])
 

@@ -12,11 +12,12 @@ from PyViCare.PyViCareUtils import (
 from starlette import status
 from starlette.responses import PlainTextResponse
 
-from app.api import circuit, dhw, health, heatpump, ventilation
+from app.api import appletv, circuit, dhw, health, heatpump, ventilation
 from app.dependencies import get_request_tracker
 from app.request_tracking import RequestTrackingMiddleware
 
 app = FastAPI()
+app.include_router(appletv.router)
 app.include_router(circuit.router)
 app.include_router(dhw.router)
 app.include_router(health.router)

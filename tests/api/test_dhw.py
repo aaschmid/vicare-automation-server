@@ -144,7 +144,7 @@ def test_heating_dhw_set_level_temp2_temperature(dependency_mocker):
 
 
 def configure_mocked_heating(dependency_mocker, preconfigured_heating_mock: Mock) -> Mock:
-    dependency_mocker.devices = [
+    dependency_mocker.vicare.devices = [
         Mock(
             service=Mock(roles=["type:heatpump"]),
             asGeneric=lambda: preconfigured_heating_mock,

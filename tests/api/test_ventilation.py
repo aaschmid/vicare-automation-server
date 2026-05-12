@@ -37,7 +37,7 @@ def test_ventilation_should_return_meta_information_on_root(dependency_mocker):
         "ventilation.levels.levelThree": {"properties": {"volumeFlow": {"value": 30, "unit": "m³/h"}}},
         "ventilation.levels.levelFour": {"properties": {"volumeFlow": {"value": 40, "unit": "m³/h"}}},
     }
-    dependency_mocker.devices = [
+    dependency_mocker.vicare.devices = [
         PyViCareDeviceConfig(
             Mock(
                 roles=["type:ventilation"], accessor=Mock(serial="test_serial"), getProperty=lambda p: property_map[p]
@@ -78,7 +78,7 @@ def test_ventilation_should_return_meta_information_on_root(dependency_mocker):
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_ventilation_mode(dependency_mocker):
-    dependency_mocker.devices = [
+    dependency_mocker.vicare.devices = [
         Mock(
             service=Mock(roles=["type:ventilation"]),
             asVentilation=lambda: Mock(getActiveMode=lambda: "permanent"),
@@ -104,7 +104,7 @@ def test_ventilation_mode(dependency_mocker):
 )
 def test_ventilation_set_mode_permanent(dependency_mocker, level: int, expected: str):
     setter_mock = Mock()
-    dependency_mocker.devices = [
+    dependency_mocker.vicare.devices = [
         Mock(
             service=Mock(roles=["type:ventilation"]),
             asVentilation=lambda: Mock(setPermanentLevel=setter_mock),
@@ -125,7 +125,7 @@ def test_ventilation_set_mode_permanent(dependency_mocker, level: int, expected:
     indirect=["dependency_mocker"],
 )
 def test_ventilation_set_mode_permanent_failure(dependency_mocker, level: int, expected: str):
-    dependency_mocker.devices = [
+    dependency_mocker.vicare.devices = [
         Mock(
             service=Mock(roles=["type:ventilation"]),
             asVentilation=lambda: Mock(),
@@ -138,7 +138,7 @@ def test_ventilation_set_mode_permanent_failure(dependency_mocker, level: int, e
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_ventilation_program(dependency_mocker):
-    dependency_mocker.devices = [
+    dependency_mocker.vicare.devices = [
         Mock(
             service=Mock(roles=["type:ventilation"]),
             asVentilation=lambda: Mock(getActiveProgram=lambda: "levelThree"),

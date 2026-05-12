@@ -76,8 +76,8 @@ Do minimal necessary changes and don't touch anything not required to fulfill th
 
 ### Testing
 - Use pytest with fixtures in `tests/conftest.py`
-- Use `@pytest.fixture` parametrized fixtures with `dependency_mocker` pattern
-- Mock FastAPI dependencies via `app.dependency_overrides`
+- Use `@pytest.fixture` parametrized fixtures with `dependency_mocker` pattern and use provided mocks
+- Use FastAPI dependency override via `app.dependency_overrides` only if necessary
 - Test both success and error paths
 - Use `record_requests()` helper from conftest for tracking tests
 

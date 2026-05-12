@@ -11,7 +11,7 @@ client = TestClient(app)
 
 @pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
 def test_heatpump_should_return_meta_information_on_root(dependency_mocker):
-    dependency_mocker.devices = [
+    dependency_mocker.vicare.devices = [
         Mock(
             asHeatPump=lambda: Mock(
                 compressors=[

@@ -1,14 +1,16 @@
 from collections import namedtuple
-from typing import Dict, Sequence, Tuple, Union
+from typing import Dict, NamedTuple, Sequence, Tuple, Union
 from unittest.mock import MagicMock
 
 import pytest
 from _pytest.fixtures import SubRequest
 from fastapi import FastAPI
+from pyatv.interface import AppleTV
 from PyViCare import PyViCare
 
-from app.dependencies import get_request_tracker, get_settings, get_vicare
+from app.dependencies import get_appletv, get_request_tracker, get_settings, get_vicare
 from app.request_tracking import RequestTracker
+from app.settings import Settings
 
 
 def check_args(args) -> (FastAPI, Dict):
@@ -29,8 +31,14 @@ def check_args(args) -> (FastAPI, Dict):
     return app, setting_values
 
 
+class DependencyMocker(NamedTuple):
+    appletv: MagicMock
+    settings: Settings
+    vicare: MagicMock
+
+
 @pytest.fixture
-def dependency_mocker(request: SubRequest) -> MagicMock:
+def dependency_mocker(request: SubRequest) -> DependencyMocker:
     app, setting_values = check_args(request.param)
 
     settings = {
@@ -40,14 +48,22 @@ def dependency_mocker(request: SubRequest) -> MagicMock:
         "loxone_url": "http://127.0.0.1",
         "loxone_user": "user",
         "loxone_password": "password",
+        "appletv_host": "192.168.1.100",
+        "appletv_companion_port": 12345,
+        "appletv_companion_identifier": "id42",
+        "appletv_companion_credentials": "test-credentials",
         **setting_values,
     }
-    app.dependency_overrides[get_settings] = lambda: namedtuple("Settings", settings.keys())(*settings.values())
+    settings: Settings = namedtuple("Settings", settings.keys())(*settings.values())
+    app.dependency_overrides[get_settings] = lambda: settings
 
     vicare: PyViCare = MagicMock()
     app.dependency_overrides[get_vicare] = lambda: vicare
 
-    return vicare
+    appletv: AppleTV = MagicMock()
+    app.dependency_overrides[get_appletv] = lambda: appletv
+
+    return DependencyMocker(appletv, settings, vicare)
 
 
 @pytest.fixture

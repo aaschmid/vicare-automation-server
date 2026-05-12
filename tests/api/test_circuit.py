@@ -255,7 +255,7 @@ def test_heatpump_circuit_set_program_temperature(dependency_mocker, program: He
 
 
 def configure_mocked_circuit(dependency_mocker, preconfigured_circuit_mock: Mock) -> Mock:
-    dependency_mocker.devices = [
+    dependency_mocker.vicare.devices = [
         Mock(
             service=Mock(roles=["type:heatpump"]),
             asHeatPump=lambda: Mock(circuits=[preconfigured_circuit_mock]),

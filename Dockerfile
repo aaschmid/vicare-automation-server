@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM ghcr.io/astral-sh/uv:0.8.17-python3.8-alpine
+FROM ghcr.io/astral-sh/uv:python3.13-trixie
 
 # Copy the application into the container.
 COPY . /app
