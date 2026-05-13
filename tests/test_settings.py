@@ -20,9 +20,6 @@ def test_init_settings_using_env_file(change_test_dir) -> None:
     client_id = ".env file"
     email = "test1@example.com"
     password = "123456"
-    loxone_url = "http://localhost:8000"
-    loxone_user = "user"
-    loxone_password = "password"
     appletv_host = "192.168.1.100"
     appletv_companion_port = "49153"
     appletv_companion_identifier = "AA:BB:CC:DD:EE:FF"
@@ -33,9 +30,6 @@ def test_init_settings_using_env_file(change_test_dir) -> None:
             CLIENT_ID="{client_id}"
             EMAIL="{email}"
             PASSWORD="{password}"
-            LOXONE_URL="{loxone_url}"
-            LOXONE_USER="{loxone_user}"
-            LOXONE_PASSWORD="{loxone_password}"
             APPLETV_HOST="{appletv_host}"
             APPLETV_COMPANION_PORT="{appletv_companion_port}"
             APPLETV_COMPANION_IDENTIFIER="{appletv_companion_identifier}"
@@ -47,9 +41,6 @@ def test_init_settings_using_env_file(change_test_dir) -> None:
     assert settings.client_id == client_id
     assert settings.email == email
     assert settings.password == password
-    assert settings.loxone_url == loxone_url
-    assert settings.loxone_user == loxone_user
-    assert settings.loxone_password == loxone_password
     assert settings.appletv_host == IPv4Address(appletv_host)
     assert settings.appletv_companion_port == int(appletv_companion_port)
     assert settings.appletv_companion_identifier == appletv_companion_identifier
@@ -60,9 +51,6 @@ def test_init_settings_using_env_variables() -> None:
     client_id = "environment variable"
     email = "test2@example.com"
     password = "654321"
-    loxone_url = "http://localhost:8001"
-    loxone_user = "me"
-    loxone_password = "pass"
     appletv_host = "192.168.1.200"
     appletv_companion_port = "49154"
     appletv_companion_identifier = "11:22:33:44:55:66"
@@ -71,9 +59,6 @@ def test_init_settings_using_env_variables() -> None:
         client_id,
         email,
         password,
-        loxone_url,
-        loxone_user,
-        loxone_password,
         appletv_host,
         appletv_companion_port,
         appletv_companion_identifier,
@@ -85,9 +70,6 @@ def test_init_settings_using_env_variables() -> None:
     assert settings.client_id == client_id
     assert settings.email == email
     assert settings.password == password
-    assert settings.loxone_url == loxone_url
-    assert settings.loxone_user == loxone_user
-    assert settings.loxone_password == loxone_password
     assert settings.appletv_host == IPv4Address(appletv_host)
     assert settings.appletv_companion_port == int(appletv_companion_port)
     assert settings.appletv_companion_identifier == appletv_companion_identifier
@@ -98,9 +80,6 @@ def test_hash_return_same_for_same_config() -> None:
     client_id = "environment variable"
     email = "test2@example.com"
     password = "654321"
-    loxone_url = "http://127.0.0.1"
-    loxone_user = "my_user"
-    loxone_password = "my_pass"
     appletv_host = "192.168.1.50"
     appletv_companion_port = "49153"
     appletv_companion_identifier = "AA:BB:CC:DD:EE:FF"
@@ -110,9 +89,6 @@ def test_hash_return_same_for_same_config() -> None:
         client_id,
         email,
         password,
-        loxone_url,
-        loxone_user,
-        loxone_password,
         appletv_host,
         appletv_companion_port,
         appletv_companion_identifier,
@@ -127,9 +103,6 @@ def test_hash_return_same_for_same_config() -> None:
 def test_hash_return_different_for_different_config() -> None:
     email = "test2@example.com"
     password = "654321"
-    loxone_url = "http://127.0.0.1"
-    loxone_user = "my_user"
-    loxone_password = "my_pass"
     appletv_host = "192.168.1.50"
     appletv_companion_port = "49153"
     appletv_companion_identifier = "AA:BB:CC:DD:EE:FF"
@@ -139,9 +112,6 @@ def test_hash_return_different_for_different_config() -> None:
         "env_var_1",
         email,
         password,
-        loxone_url,
-        loxone_user,
-        loxone_password,
         appletv_host,
         appletv_companion_port,
         appletv_companion_identifier,
@@ -153,9 +123,6 @@ def test_hash_return_different_for_different_config() -> None:
         "env_var_2",
         email,
         password,
-        loxone_url,
-        loxone_user,
-        loxone_password,
         appletv_host,
         appletv_companion_port,
         appletv_companion_identifier,
@@ -170,9 +137,6 @@ def test_hash_return_different_for_different_appletv_config() -> None:
     client_id = "same_client"
     email = "same@example.com"
     password = "same_pass"
-    loxone_url = "http://127.0.0.1"
-    loxone_user = "user"
-    loxone_password = "pass"
     appletv_host = "192.168.1.50"
     appletv_companion_port = "49153"
     appletv_companion_identifier = "id1"
@@ -181,9 +145,6 @@ def test_hash_return_different_for_different_appletv_config() -> None:
         client_id,
         email,
         password,
-        loxone_url,
-        loxone_user,
-        loxone_password,
         appletv_host,
         appletv_companion_port,
         appletv_companion_identifier,
@@ -195,9 +156,6 @@ def test_hash_return_different_for_different_appletv_config() -> None:
         client_id,
         email,
         password,
-        loxone_url,
-        loxone_user,
-        loxone_password,
         appletv_host,
         appletv_companion_port,
         appletv_companion_identifier,
@@ -212,9 +170,6 @@ def prepare_env_variables(
     client_id: str,
     email: str,
     password: str,
-    loxone_url: str,
-    loxone_user: str,
-    loxone_password: str,
     appletv_host: str,
     appletv_companion_port: str,
     appletv_companion_identifier: str,
@@ -223,9 +178,6 @@ def prepare_env_variables(
     os.environ["CLIENT_ID"] = client_id
     os.environ["EMAIL"] = email
     os.environ["PASSWORD"] = password
-    os.environ["LOXONE_URL"] = loxone_url
-    os.environ["LOXONE_USER"] = loxone_user
-    os.environ["LOXONE_PASSWORD"] = loxone_password
     os.environ["APPLETV_HOST"] = appletv_host
     os.environ["APPLETV_COMPANION_PORT"] = appletv_companion_port
     os.environ["APPLETV_COMPANION_IDENTIFIER"] = appletv_companion_identifier

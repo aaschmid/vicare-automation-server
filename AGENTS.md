@@ -125,4 +125,7 @@ Required in `.env`:
 - `CLIENT_ID` - ViCare OAuth client ID
 - `EMAIL` - ViCare account email
 - `PASSWORD` - ViCare account password
-- `LOXONE_URL`, `LOXONE_USER`, `LOXONE_PASSWORD` - Optional Loxone config
+- `APPLETV_HOST` - Apple TV device IPv4 address
+- `APPLETV_COMPANION_PORT` - Apple TV companion port
+- `APPLETV_COMPANION_IDENTIFIER` -Apple TV companion identifier
+- `APPLETV_COMPANION_CREDENTIALS` - Apple TV companion credentials

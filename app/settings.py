@@ -8,10 +8,6 @@ class Settings(BaseSettings):
     email: str
     password: str
 
-    loxone_url: str
-    loxone_user: str
-    loxone_password: str
-
     appletv_host: IPv4Address
     appletv_companion_port: int
     appletv_companion_identifier: str
