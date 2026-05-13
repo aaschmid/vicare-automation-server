@@ -1,0 +1,35 @@
+# VCS & CI
+.git
+.github
+
+# Tests
+tests
+
+# Build metadata
+Dockerfile
+.dockerignore
+.gitignore
+
+# Docs & tooling
+AGENTS.md
+
+# Secrets
+.env
+.env.template
+vicare.token
+
+# Python caches & artifacts
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+build
+dist
+
+# Virtual environments
+.venv
+env
+venv
+
+# OS
+.DS_Store
