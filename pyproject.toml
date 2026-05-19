@@ -68,3 +68,6 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends", "fastapi.
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
+
+[tool.uv.sources]
+pyatv = { git = "https://github.com/albaintor/pyatv", rev = "26.5" }

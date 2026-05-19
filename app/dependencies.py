@@ -34,9 +34,8 @@ def get_vicare(settings: Annotated[Settings, Depends(get_settings)]) -> PyViCare
     return vicare
 
 
-async def get_appletv(settings: Annotated[Settings, Depends(get_settings)]) -> AsyncGenerator[AppleTV | None]:
-    loop = asyncio.get_running_loop()
-
+@lru_cache()
+def get_appletv_config(settings: Annotated[Settings, Depends(get_settings)]) -> conf.AppleTV:
     config = conf.AppleTV(settings.appletv_host, "Unknown")
     config.add_service(
         conf.ManualService(
@@ -47,6 +46,12 @@ async def get_appletv(settings: Annotated[Settings, Depends(get_settings)]) -> A
             credentials=settings.appletv_companion_credentials,
         )
     )
+    return config
+
+
+async def get_appletv(config: Annotated[conf.AppleTV, Depends(get_appletv_config)]) -> AsyncGenerator[AppleTV | None]:
+    loop = asyncio.get_running_loop()
+
     atv = await connect(config, loop)
     yield atv
     atv.close()

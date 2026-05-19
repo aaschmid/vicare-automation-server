@@ -791,8 +791,8 @@ wheels = [
 
 [[package]]
 name = "pyatv"
-version = "0.17.0"
-source = { registry = "https://pypi.org/simple" }
+version = "0.16.1"
+source = { git = "https://github.com/albaintor/pyatv?rev=26.5#ce7e44e82535fceebeca40048cc38a8535b0b602" }
 dependencies = [
     { name = "aiohttp" },
     { name = "chacha20poly1305-reuseable" },
@@ -806,10 +806,6 @@ dependencies = [
     { name = "tabulate" },
     { name = "tinytag" },
     { name = "zeroconf" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/51/98/cbe72f386c0dcfa1d815aef12216315d59870bbb349925cf89ed64efa4e8/pyatv-0.17.0.tar.gz", hash = "sha256:3408bfb442d1676ee4cde4d71d7715d3083e577a088be2ce9d96b86d0e0adec5", size = 1692508, upload-time = "2026-01-21T19:23:06.686Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/89/5d/fd555dab9405c9238c5c01335d2ea70f12887d41273057355fe1c509e13d/pyatv-0.17.0-py3-none-any.whl", hash = "sha256:39d4000f19ab402808a7a098d4bc1d0f92959542b2d4c40a138be5b5832f4f8f", size = 462629, upload-time = "2026-01-21T19:23:05.454Z" },
 ]
 
 [[package]]
@@ -1161,7 +1157,7 @@ requires-dist = [
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.26.0" },
     { name = "isort", marker = "extra == 'dev'", specifier = ">=5.13.2" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=2.1.0" },
-    { name = "pyatv", specifier = "==0.17.0" },
+    { name = "pyatv", git = "https://github.com/albaintor/pyatv?rev=26.5" },
     { name = "pydantic-settings", specifier = ">=2.14.1,<3.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1.0" },
