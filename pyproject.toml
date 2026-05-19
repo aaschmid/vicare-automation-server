@@ -17,7 +17,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "black>=23.12.1",
+    "black>=26.5.1",
     "httpx>=0.26.0",
     "isort>=5.13.2",
     "mypy>=2.1.0",
