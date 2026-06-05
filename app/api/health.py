@@ -144,7 +144,8 @@ def _get_error_status_code(
     - 6: Not Supported/Invalid Data/Command Error (405)
     - 7: Internal Server Error (500)
     - 8: Uncategorized Error
-    - 9-10: Reserved for future error types
+    - 9: Service Unavailable Error (503)
+    - 10: Reserved for future error types
     """
     if auth_token_status == "invalid":
         return 2
@@ -170,5 +171,7 @@ def _get_error_status_code(
         return 6
     elif failure_status_code == status.HTTP_500_INTERNAL_SERVER_ERROR:
         return 7
+    elif failure_status_code == status.HTTP_503_SERVICE_UNAVAILABLE:
+        return 9
     else:
         return 8

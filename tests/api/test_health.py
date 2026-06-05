@@ -112,6 +112,7 @@ def test_health_status_code_auth_token_error(dependency_mocker, request_tracker)
         (app, status.HTTP_405_METHOD_NOT_ALLOWED, 6),  # Not Supported Error
         (app, status.HTTP_500_INTERNAL_SERVER_ERROR, 7),  # Internal Server Error
         (app, status.HTTP_502_BAD_GATEWAY, 8),  # Uncategorized error
+        (app, status.HTTP_503_SERVICE_UNAVAILABLE, 9),  # AppleTV Unavailable
     ],
     indirect=["dependency_mocker"],
 )

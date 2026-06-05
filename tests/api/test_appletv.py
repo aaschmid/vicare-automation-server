@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from pyatv.const import PowerState
+from starlette import status
 
 from app.api.appletv import ROUTE_PREFIX_APPLETV
 from app.dependencies import get_appletv
@@ -34,5 +35,4 @@ def test_appletv_unavailable():
 
     response = client.get(ROUTE_PREFIX_APPLETV)
 
-    assert response.status_code == 200
-    assert response.json() == {"active": -1}
+    assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
