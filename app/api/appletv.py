@@ -15,7 +15,7 @@ router = APIRouter(prefix=ROUTE_PREFIX_APPLETV)
 @router.get("")
 def get_state(atv: Annotated[AppleTV | None, Depends(dependencies.get_appletv)]) -> dict:
     if atv is None:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "AppleTV not available")
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "AppleTV connection not available")
 
     return {
         "active": 1 if atv.power.power_state == PowerState.On else 0,

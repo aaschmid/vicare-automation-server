@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from functools import lru_cache
 from typing import Annotated, AsyncGenerator
 
@@ -9,6 +10,8 @@ from PyViCare.PyViCare import PyViCare
 
 from app.request_tracking import RequestTracker
 from app.settings import Settings
+
+logger = logging.getLogger(__name__)
 
 
 @lru_cache()
@@ -51,7 +54,10 @@ def get_appletv_config(settings: Annotated[Settings, Depends(get_settings)]) -> 
 
 async def get_appletv(config: Annotated[conf.AppleTV, Depends(get_appletv_config)]) -> AsyncGenerator[AppleTV | None]:
     loop = asyncio.get_running_loop()
-
-    atv = await connect(config, loop)
-    yield atv
-    atv.close()
+    try:
+        result = await connect(config, loop)
+        yield result
+        result.close()
+    except Exception as exc:
+        logger.warning(f"Error connecting to Apple TV: {exc}")
+        yield None
