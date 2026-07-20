@@ -110,3 +110,7 @@ Required in `.env`:
 - `APPLETV_COMPANION_PORT` - Apple TV companion port
 - `APPLETV_COMPANION_IDENTIFIER` -Apple TV companion identifier
 - `APPLETV_COMPANION_CREDENTIALS` - Apple TV companion credentials
+
+## Special hints
+
+Pairing with AppleTV is currently manually

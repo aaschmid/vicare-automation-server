@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from PyViCare.PyViCareUtils import (
     PyViCareBrowserOAuthTimeoutReachedError,
@@ -12,11 +14,23 @@ from PyViCare.PyViCareUtils import (
 from starlette import status
 from starlette.responses import PlainTextResponse
 
+from app import dependencies
 from app.api import appletv, circuit, dhw, health, heatpump, ventilation
 from app.dependencies import get_request_tracker
 from app.request_tracking import RequestTrackingMiddleware
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Application startup")
+    yield
+    # Teardown
+    print("Application shutdown")
+    await dependencies.teardown_appletv()
+
+
+app = FastAPI(lifespan=lifespan)
+
 app.include_router(appletv.router)
 app.include_router(circuit.router)
 app.include_router(dhw.router)

@@ -1,4 +1,3 @@
-
 # Settings
 
 Can be either set via environment variable or `.env` file.
@@ -16,3 +15,11 @@ To reach and check status of Apple TV:
 * `APPLETV_COMPANION_PORT`
 * `APPLETV_COMPANION_IDENTIFIER`
 * `APPLETV_COMPANION_CREDENTIALS`
+
+# Pairing AppleTV
+
+This is currently done manually with the following steps:
+
+* Remove current config: `rm ~/.pyatv.conf`
+* Start Pairing with `uv run atvremote wizard --protocol companion --remote-name "atvremote" --verbose`
+* Look up identifier and credentials in `~/.pyatv.conf`
