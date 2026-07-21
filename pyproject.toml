@@ -7,7 +7,7 @@ authors = [{name = "Andreas Schmid", email = "service@aaschmid.de"}]
 readme = "readme.md"
 requires-python = ">=3.12,<3.14"
 dependencies = [
-    "fastapi>=0.139.0,<1.0.0",
+    "fastapi>=0.139.2,<1.0.0",
     "uvicorn>=0.51.0,<1.0.0",
     "pydantic-settings>=2.14.2,<3.0.0",
     "pyvicare>=2.60.2,<3.0.0",
