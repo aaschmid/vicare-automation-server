@@ -993,16 +993,16 @@ wheels = [
 
 [[package]]
 name = "pyvicare"
-version = "2.60.2"
+version = "2.61.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "authlib" },
     { name = "deprecated" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/33/f8/3c2c7c971fe6f90a5576c81c33ce5ab5957beb3e9f92fa3898399e253f59/pyvicare-2.60.2.tar.gz", hash = "sha256:759a3ce8d3cb75689a553cf4de4642d13addf2aacee0257befeecc35110eb5d6", size = 35280, upload-time = "2026-05-06T07:03:27.544Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/48/e1/870d4ee7a9dd34e1104e577f5254bbe18cf65bfeea47811b4fed1550d782/pyvicare-2.61.0.tar.gz", hash = "sha256:1f0b5a0b302e6c4db5024aec94f2c08a4fb54ae97d36deb31d8112002773c563", size = 35889, upload-time = "2026-07-14T11:14:51.908Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/68/fa489cef9511eb0cbb209dece55cb72cdb1340d670b47ac98133305530b1/pyvicare-2.60.2-py3-none-any.whl", hash = "sha256:b2ff5153360d0490d282dcdb69967322f0da9c721e17e52d755cc846aade2922", size = 45248, upload-time = "2026-05-06T07:03:26.117Z" },
+    { url = "https://files.pythonhosted.org/packages/f2/20/42b5a9c4ab607d60ffc3f0488ba2fcae19aa149b3ea94629b5809d8c6728/pyvicare-2.61.0-py3-none-any.whl", hash = "sha256:cf135636459d3ca089c50ed1bfb1ce3241567bcd38538a3269f174830a8b583c", size = 47246, upload-time = "2026-07-14T11:14:50.78Z" },
 ]
 
 [[package]]
@@ -1188,7 +1188,7 @@ requires-dist = [
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.4.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1.0" },
     { name = "pytest-mock", marker = "extra == 'dev'", specifier = ">=3.12.0" },
-    { name = "pyvicare", specifier = ">=2.60.2,<3.0.0" },
+    { name = "pyvicare", specifier = ">=2.61.0,<3.0.0" },
     { name = "requests", specifier = ">=2.34.2,<3.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.15.22" },
     { name = "uvicorn", specifier = ">=0.51.0,<1.0.0" },
