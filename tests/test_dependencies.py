@@ -1,4 +1,3 @@
-import asyncio
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
@@ -110,7 +109,7 @@ async def test_dead_cached_port_falls_back_to_full_scan(dependency_mocker):
 async def test_connection_timeout_returns_none(dependency_mocker):
     deps._cached_appletv_connection = None
 
-    with patch("app.dependencies.connect", new_callable=AsyncMock, side_effect=asyncio.TimeoutError()):
+    with patch("app.dependencies.connect", new_callable=AsyncMock, side_effect=TimeoutError()):
         result = await deps.get_appletv_connection(dependency_mocker.settings)
 
     assert result is None

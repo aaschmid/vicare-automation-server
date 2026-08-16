@@ -1,5 +1,6 @@
 from collections import namedtuple
-from typing import Dict, NamedTuple, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import NamedTuple
 from unittest.mock import MagicMock
 
 import pytest
@@ -20,7 +21,7 @@ from app.request_tracking import RequestTracker
 from app.settings import Settings
 
 
-def check_args(args) -> (FastAPI, Dict):
+def check_args(args) -> (FastAPI, dict):
     assert type(args) is FastAPI or (
         len(args) > 0 and type(args[0]) is FastAPI
     ), "First or only argument of `dependency_mocker` must be `app: FastAPI`"
@@ -81,7 +82,7 @@ def request_tracker() -> RequestTracker:
 
 def record_requests(
     tracker: RequestTracker,
-    requests: Sequence[Union[Tuple[str, int], Tuple[str, int, str | None]]],
+    requests: Sequence[tuple[str, int] | tuple[str, int, str | None]],
 ) -> None:
     """Helper function to record multiple requests in a readable way.
 

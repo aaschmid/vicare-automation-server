@@ -20,7 +20,7 @@ _cached_appletv_connection: "AppleTvConnection | None" = None
 _connection_lock = asyncio.Lock()
 
 
-@lru_cache()
+@lru_cache
 def get_request_tracker() -> RequestTracker:
     """FastAPI dependency to get the request tracker singleton.
 
@@ -30,12 +30,12 @@ def get_request_tracker() -> RequestTracker:
     return RequestTracker()
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     return Settings()
 
 
-@lru_cache()
+@lru_cache
 def get_vicare(settings: Annotated[Settings, Depends(get_settings)]) -> PyViCare:
     vicare = PyViCare()
     vicare.setCacheDuration(120)
@@ -128,7 +128,7 @@ async def _try_to_connect_to_appletv_on_port(port: int, settings: Settings) -> A
 
     try:
         return await asyncio.wait_for(connect(config, asyncio.get_running_loop()), timeout=CONNECTION_TRYING_TIMEOUT)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         logger.debug(f"Connection to port {port} timed out after {CONNECTION_TRYING_TIMEOUT}s.")
         return None
     except Exception as e:

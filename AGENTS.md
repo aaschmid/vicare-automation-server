@@ -11,6 +11,9 @@ FastAPI server for controlling ViCare heating systems (circuits, DHW, heat pumps
 All commands must run inside `nix-shell` or prefixed with `nix-shell --run "command"`:
 
 ```bash
+# Virtual environment
+uv sync --locked --all-extras --dev
+
 # Development server
 uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --log-config log-config.json
 
@@ -24,7 +27,7 @@ uv run pytest --cov=app --cov-report=html      # With coverage
 # Code quality (run all before committing)
 uv run black .
 uv run isort .
-uv run ruff check .
+uv run ruff check app/ tests/
 uv run mypy app
 ```
 
