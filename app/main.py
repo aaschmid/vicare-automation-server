@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
     yield
     # Teardown
     print("Application shutdown")
-    await dependencies.teardown_appletv()
+    await dependencies.teardown_cached_appletv_connection()
 
 
 app = FastAPI(lifespan=lifespan)

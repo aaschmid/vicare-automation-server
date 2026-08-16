@@ -8,7 +8,14 @@ from fastapi import FastAPI
 from pyatv.interface import AppleTV
 from PyViCare import PyViCare
 
-from app.dependencies import get_appletv, get_request_tracker, get_settings, get_vicare
+from app.dependencies import (
+    PORT_START,
+    AppleTvConnection,
+    get_appletv_connection,
+    get_request_tracker,
+    get_settings,
+    get_vicare,
+)
 from app.request_tracking import RequestTracker
 from app.settings import Settings
 
@@ -32,7 +39,7 @@ def check_args(args) -> (FastAPI, Dict):
 
 
 class DependencyMocker(NamedTuple):
-    appletv: MagicMock
+    appletv_connection: AppleTvConnection
     settings: Settings
     vicare: MagicMock
 
@@ -46,7 +53,6 @@ def dependency_mocker(request: SubRequest) -> DependencyMocker:
         "password": "password",
         "client_id": "test_client",
         "appletv_host": "192.168.1.100",
-        "appletv_companion_port": 12345,
         "appletv_companion_identifier": "id42",
         "appletv_companion_credentials": "test-credentials",
         **setting_values,
@@ -58,7 +64,9 @@ def dependency_mocker(request: SubRequest) -> DependencyMocker:
     app.dependency_overrides[get_vicare] = lambda: vicare
 
     appletv: AppleTV = MagicMock()
-    app.dependency_overrides[get_appletv] = lambda: appletv
+    app.dependency_overrides[get_appletv_connection] = lambda: AppleTvConnection(
+        appletv, settings.appletv_host, PORT_START + 1
+    )
 
     return DependencyMocker(appletv, settings, vicare)
 
@@ -94,7 +102,7 @@ def record_requests(
     for request_tuple in requests:
         if len(request_tuple) == 2:
             endpoint, status_code = request_tuple
-            tracker.record_request(endpoint, status_code, None)
+            tracker.record_request(endpoint, status_code, "None")
         else:
             endpoint, status_code, message = request_tuple
             tracker.record_request(endpoint, status_code, message)

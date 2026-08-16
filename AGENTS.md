@@ -107,7 +107,6 @@ Required in `.env`:
 - `EMAIL` - ViCare account email
 - `PASSWORD` - ViCare account password
 - `APPLETV_HOST` - Apple TV device IPv4 address
-- `APPLETV_COMPANION_PORT` - Apple TV companion port
 - `APPLETV_COMPANION_IDENTIFIER` -Apple TV companion identifier
 - `APPLETV_COMPANION_CREDENTIALS` - Apple TV companion credentials
 

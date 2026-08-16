@@ -12,7 +12,6 @@ In addition, we added more value for further usecases.
 
 To reach and check status of Apple TV:
 * `APPLETV_HOST`
-* `APPLETV_COMPANION_PORT`
 * `APPLETV_COMPANION_IDENTIFIER`
 * `APPLETV_COMPANION_CREDENTIALS`
 

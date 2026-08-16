@@ -9,7 +9,6 @@ class Settings(BaseSettings):
     password: str
 
     appletv_host: IPv4Address
-    appletv_companion_port: int
     appletv_companion_identifier: str
     appletv_companion_credentials: str
 
@@ -27,7 +26,6 @@ class Settings(BaseSettings):
             + self.email
             + self.password
             + str(self.appletv_host)
-            + str(self.appletv_companion_port)
             + self.appletv_companion_identifier
             + self.appletv_companion_credentials
         )
