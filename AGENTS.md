@@ -116,3 +116,30 @@ Required in `.env`:
 ## Special hints
 
 Pairing with AppleTV is currently manually
+
+## Commit Conventions
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) with a scope, e.g. `feat(appletv):`, `feat(ReqTracker):`, `chore(deps): Bump ...`.
+
+Every commit must be signed off (`-s` / `--signoff`), adding a `Signed-off-by: <Name> <email>` trailer. This is required for all commits.
+
+### Keep docs in sync with code
+- When you add, remove, or rename a field in `app/settings.py`, **also update** this file's Environment Variables section and `readme.md` in the same change.
+- Same applies to route prefixes, env var names, and CLI commands.
+- Before finishing a task, grep the repo for the changed symbol to catch stale references.
+
+### Run tests and linting, do not assume
+- After any production code change, run the full linting and test suite (see "Essential Commands" above).
+- Do not claim "tests pass" without having run them in this session.
+- Only consider a test "green" if it passes in the current sandbox; if a failure is caused by the sandbox (e.g. `PermissionError` reading `.env`), say so explicitly and do not silently ignore it.
+- Prefer fixing root causes over suppressing warnings (no `filterwarnings` to hide warnings you could fix).
+
+### Dependency changes require a working venv
+- Changing `pyproject.toml` dependencies requires re-locking (`uv lock`) **and** syncing (`uv sync --locked --all-extras --dev`) so the new package is actually installed.
+- A dependency change is only complete when `uv sync --locked --all-extras --dev` succeeds and the tests pass with the new venv. A successful `uv lock` alone is NOT enough.
+- If the sandbox blocks the wheel download, leave the change uncommitted and flag it to the user instead of committing a venv-breaking state.
+
+### Commit hygiene
+- Only commit what is staged. Check `git status` and `git diff --cached` before committing.
+- Do not stage extra files "to be helpful"; if unrelated changes exist in the worktree, leave them unstaged and mention them.
+- Keep commits focused: one logical change per commit (e.g. do not mix a feature rework with a dependency swap).
