@@ -33,7 +33,7 @@ def get_heatpump(
             "controllerSerial": heatpump.getControllerSerial(),
             "deviceId": device.device_id,
             "model": device.device_model,
-            "serial": device.service.accessor.serial,
+            "serial": device.accessor.serial,
         },
         "compressor": {
             "active": 1 if compressor.getActive() else 0,

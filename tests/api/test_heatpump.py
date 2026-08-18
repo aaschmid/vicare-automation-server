@@ -32,9 +32,9 @@ def test_heatpump_should_return_meta_information_on_root(dependency_mocker):
             ),
             device_id=1234,
             device_model="test_device",
+            accessor=Mock(serial="test_serial"),
             service=Mock(
                 roles=["type:heatpump"],
-                accessor=Mock(serial="test_serial"),
             ),
             status="online",
         )

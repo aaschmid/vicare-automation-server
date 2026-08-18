@@ -39,10 +39,8 @@ def test_ventilation_should_return_meta_information_on_root(dependency_mocker):
     }
     dependency_mocker.vicare.devices = [
         PyViCareDeviceConfig(
-            Mock(
-                roles=["type:ventilation"], accessor=Mock(serial="test_serial"), getProperty=lambda p: property_map[p]
-            ),
-            1234,
+            Mock(serial="test_serial", device_id=1234),
+            Mock(roles=["type:ventilation"], getProperty=lambda accessor, p: property_map[p]),
             "test_device",
             "online",
         )

@@ -61,7 +61,7 @@ def test_heatpump_circuit_get_should_return_current_state(dependency_mocker):
                 HeatingCircuitProgram.Reduced.value,
             ],
             circuit=1,
-            service=Mock(getProperty=lambda p: property_map[p]),
+            getProperty=lambda p: property_map[p],
         ),
     )
 

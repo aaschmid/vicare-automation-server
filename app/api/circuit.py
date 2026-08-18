@@ -64,7 +64,7 @@ def get_circuit(circuit: HeatingCircuit = Depends(get_single_circuit)) -> dict:
     no = circuit.circuit
     program = circuit.getActiveProgram()
     programs = {
-        program: circuit.service.getProperty(f"heating.circuits.{no}.operating.programs.{program}")["properties"]
+        program: circuit.getProperty(f"heating.circuits.{no}.operating.programs.{program}")["properties"]
         for program in circuit.getPrograms()
     }
 
@@ -99,7 +99,7 @@ def get_circuit(circuit: HeatingCircuit = Depends(get_single_circuit)) -> dict:
                 "max": circuit.getTemperatureLevelsMax(),
             },
             "supply": circuit.getSupplyTemperature(),
-            "target": circuit.service.getProperty(f"heating.circuits.{no}.temperature")["properties"]["value"]["value"],
+            "target": circuit.getProperty(f"heating.circuits.{no}.temperature")["properties"]["value"]["value"],
             "targetCalc": circuit.getTargetSupplyTemperature(),
         },
     }
