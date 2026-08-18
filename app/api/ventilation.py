@@ -30,22 +30,20 @@ def get_ventilation(
     ventilation: PyViCareVentilationDevice = Depends(get_single_ventilation),
 ) -> dict:
     level_strings = ventilation.getVentilationLevels()
-    levels = {level: device.service.getProperty(f"ventilation.levels.{level}")["properties"] for level in level_strings}
+    levels = {level: ventilation.getProperty(f"ventilation.levels.{level}")["properties"] for level in level_strings}
 
     active_level = ventilation.getVentilationLevel()
 
-    filter_change = device.service.getProperty("ventilation.operating.modes.filterChange")["properties"]["active"][
-        "value"
-    ]
+    filter_change = ventilation.getProperty("ventilation.operating.modes.filterChange")["properties"]["active"]["value"]
     return {
         "active": 1 if device.status.lower() == "online" else 0,
         "device": {
             "deviceId": device.device_id,
             "model": device.device_model,
-            "productIdentification": device.service.getProperty("device.productIdentification")["properties"][
-                "product"
-            ]["value"],
-            "serial": device.service.accessor.serial,
+            "productIdentification": ventilation.getProperty("device.productIdentification")["properties"]["product"][
+                "value"
+            ],
+            "serial": device.accessor.serial,
         },
         "filterChange": 1 if filter_change else 0,
         # strip off `level` from levels
