@@ -93,9 +93,8 @@ async def get_appletv_connection(settings: Annotated[Settings, Depends(get_setti
             return None
 
         logger.info(
-            f"Scanning for Apple TV port (range {PORT_START}-{PORT_END}" + f" without cached port {last_port})"
-            if last_port
-            else ")"
+            f"Scanning for Apple TV port (range {PORT_START}-{PORT_END}"
+            + (f" without cached port {last_port})" if last_port else ")")
         )
         for port in range(PORT_START, PORT_END + 1):
             if last_port and port == last_port:
