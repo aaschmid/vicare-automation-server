@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from pyatv.interface import AppleTV
 from PyViCare import PyViCare
 
+import app.dependencies as _appletv_globals
 from app.dependencies import (
     PORT_START,
     AppleTvConnection,
@@ -37,6 +38,16 @@ def check_args(args) -> (FastAPI, dict):
             setting_values = args[1]
 
     return app, setting_values
+
+
+@pytest.fixture(autouse=True)
+def _reset_appletv_connection_globals() -> None:
+    """Reset AppleTV connection cache + scan-cooldown between tests for isolation."""
+    _appletv_globals._cached_appletv_connection = None
+    _appletv_globals._last_scan_failed_at = None
+    yield
+    _appletv_globals._cached_appletv_connection = None
+    _appletv_globals._last_scan_failed_at = None
 
 
 class DependencyMocker(NamedTuple):

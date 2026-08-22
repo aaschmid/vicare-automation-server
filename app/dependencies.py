@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 from dataclasses import dataclass
 from functools import lru_cache
 from ipaddress import IPv4Address
@@ -17,6 +18,7 @@ from app.settings import Settings
 logger = logging.getLogger(__name__)
 
 _cached_appletv_connection: "AppleTvConnection | None" = None
+_last_scan_failed_at: float | None = None
 _connection_lock = asyncio.Lock()
 
 
@@ -53,10 +55,13 @@ class AppleTvConnection:
 CONNECTION_TRYING_TIMEOUT = 2.0
 PORT_START = 49152
 PORT_END = PORT_START + 49
+# ponytail: fixed cooldown window; make configurable if poll cadence or device recovery time demands it
+SCAN_COOLDOWN = 60.0
 
 
 async def get_appletv_connection(settings: Annotated[Settings, Depends(get_settings)]) -> AppleTvConnection | None:
     global _cached_appletv_connection
+    global _last_scan_failed_at
 
     async with _connection_lock:
         last_port = None
@@ -75,9 +80,17 @@ async def get_appletv_connection(settings: Annotated[Settings, Depends(get_setti
             atv = await _try_to_connect_to_appletv_on_port(last_port, settings)
             if atv:
                 logger.info(f"Reconnected using cached port {last_port}")
+                _last_scan_failed_at = None
                 _cached_appletv_connection = AppleTvConnection(atv, settings.appletv_host, last_port)
                 return _cached_appletv_connection
             logger.info(f"Last port {last_port} no longer works")
+
+        if _last_scan_failed_at is not None and (time.monotonic() - _last_scan_failed_at) < SCAN_COOLDOWN:
+            logger.info(
+                f"Skipping scan, last full scan failed {time.monotonic() - _last_scan_failed_at:.1f}s ago "
+                f"(cooldown {SCAN_COOLDOWN}s)"
+            )
+            return None
 
         logger.info(
             f"Scanning for Apple TV port (range {PORT_START}-{PORT_END}" + f" without cached port {last_port})"
@@ -93,10 +106,12 @@ async def get_appletv_connection(settings: Annotated[Settings, Depends(get_setti
             atv = await _try_to_connect_to_appletv_on_port(port, settings)
             if atv:
                 logger.info(f"Found AppleTV service on port {port} and connected to it")
+                _last_scan_failed_at = None
                 _cached_appletv_connection = AppleTvConnection(atv, settings.appletv_host, port)
                 return _cached_appletv_connection
 
         logger.warning(f"No working connection to AppleTV found on {settings.appletv_host}")
+        _last_scan_failed_at = time.monotonic()
         return None
 
 

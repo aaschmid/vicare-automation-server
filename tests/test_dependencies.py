@@ -116,6 +116,26 @@ async def test_connection_timeout_returns_none(dependency_mocker):
     assert deps._cached_appletv_connection is None
 
 
+@pytest.mark.parametrize("dependency_mocker", [app], indirect=True)
+async def test_failed_scan_is_cooldown_cached(dependency_mocker):
+    deps._cached_appletv_connection = None
+    deps._last_scan_failed_at = None
+
+    with patch(
+        "app.dependencies.connect",
+        new_callable=AsyncMock,
+        side_effect=ConnectionError("connection refused"),
+    ) as patched:
+        first = await deps.get_appletv_connection(dependency_mocker.settings)
+        second = await deps.get_appletv_connection(dependency_mocker.settings)
+
+    assert first is None
+    assert second is None
+    # First call scans the whole range; second call is within cooldown and must not scan at all
+    assert patched.call_count == deps.PORT_END - deps.PORT_START + 1
+    assert deps._last_scan_failed_at is not None
+
+
 @pytest.mark.parametrize("dependency_mocker", [[app, {"appletv_companion_credentials": "my_secret"}]], indirect=True)
 async def test_connect_passes_credentials_from_settings(dependency_mocker):
     deps._cached_appletv_connection = None
