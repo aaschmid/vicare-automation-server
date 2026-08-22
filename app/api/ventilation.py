@@ -29,26 +29,55 @@ def get_ventilation(
     device: PyViCareDeviceConfig = Depends(get_single_ventilation_device),
     ventilation: PyViCareVentilationDevice = Depends(get_single_ventilation),
 ) -> dict:
+    def prop(name: str) -> dict:
+        return ventilation.getProperty(name)["properties"]
+
     level_strings = ventilation.getVentilationLevels()
-    levels = {level: ventilation.getProperty(f"ventilation.levels.{level}")["properties"] for level in level_strings}
+    levels = {level: prop(f"ventilation.levels.{level}") for level in level_strings}
 
     active_level = ventilation.getVentilationLevel()
 
-    filter_change = ventilation.getProperty("ventilation.operating.modes.filterChange")["properties"]["active"]["value"]
+    filter_change = prop("ventilation.operating.modes.filterChange")["active"]["value"]
+    filter_runtime = prop("ventilation.filter.runtime")
+
     return {
         "active": 1 if device.status.lower() == "online" else 0,
+        "bypass": {
+            "active": 1 if prop("ventilation.bypass")["active"]["value"] else 0,
+            "positionPercent": prop("ventilation.bypass.position")["value"]["value"],
+        },
         "device": {
             "deviceId": device.device_id,
             "model": device.device_model,
-            "productIdentification": ventilation.getProperty("device.productIdentification")["properties"]["product"][
-                "value"
-            ],
+            "productIdentification": prop("device.productIdentification")["product"]["value"],
             "serial": device.accessor.serial,
         },
-        "filterChange": 1 if filter_change else 0,
-        # strip off `level` from levels
+        "fans": {
+            "supply": {
+                "currentRpm": prop("ventilation.fan.supply")["current"]["value"],
+                "targetRpm": prop("ventilation.fan.supply")["target"]["value"],
+            },
+            "exhaust": {
+                "currentRpm": prop("ventilation.fan.exhaust")["current"]["value"],
+                "targetRpm": prop("ventilation.fan.exhaust")["target"]["value"],
+            },
+        },
+        "filter": {
+            "changeModeActive": 1 if filter_change else 0,
+            "operatingDays": round(filter_runtime["operatingHours"]["value"] / 24),
+            "pollutionPercent": prop("ventilation.filter.pollution.blocked")["value"]["value"],
+            "overdueHours": filter_runtime["overdueHours"]["value"],
+            "remainingDays": round(filter_runtime["remainingHours"]["value"] / 24),
+        },
+        "heatExchanger": {
+            "frostProtectionActive": (
+                0 if prop("ventilation.heatExchanger.frostprotection")["status"]["value"] == "off" else 1
+            ),
+            "recoveryPercent": prop("ventilation.heating.recovery")["value"]["value"],
+        },
         "levels": {"active": active_level[5:].lower(), "activeNo": level_strings.index(active_level) + 1}
         | {
+            # strip off `level` from levels
             level[5:].lower(): {
                 "active": 1 if level == active_level else 0,
                 "volumeFlow": f"{v['volumeFlow']['value']} {v['volumeFlow']['unit']}",
@@ -59,7 +88,25 @@ def get_ventilation(
             mode: {"active": 1 if ventilation.getVentilationMode(mode) else 0}
             for mode in ventilation.getVentilationModes()
         },
+        "sensors": {
+            "temperature": {
+                "outsideCelsius": prop("ventilation.sensors.temperature.outside")["value"]["value"],
+                "supplyCelsius": prop("ventilation.sensors.temperature.supply")["value"]["value"],
+                "exhaustCelsius": prop("ventilation.sensors.temperature.exhaust")["value"]["value"],
+                "extractCelsius": prop("ventilation.sensors.temperature.extract")["value"]["value"],
+            },
+            "humidity": {
+                "outdoorPercent": prop("ventilation.sensors.humidity.outdoor")["value"]["value"],
+                "supplyPercent": prop("ventilation.sensors.humidity.supply")["value"]["value"],
+                "exhaustPercent": prop("ventilation.sensors.humidity.exhaust")["value"]["value"],
+                "extractPercent": prop("ventilation.sensors.humidity.extract")["value"]["value"],
+            },
+        },
         "status": device.status,
+        "volumeFlow": {
+            "inputCubicMetersPerHour": prop("ventilation.volumeFlow.current.input")["value"]["value"],
+            "outputCubicMetersPerHour": prop("ventilation.volumeFlow.current.output")["value"]["value"],
+        },
     }
 
 
