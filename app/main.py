@@ -14,19 +14,20 @@ from PyViCare.PyViCareUtils import (
 from starlette import status
 from starlette.responses import PlainTextResponse
 
-from app import dependencies
 from app.api import appletv, circuit, dhw, health, heatpump, ventilation
-from app.dependencies import get_request_tracker
+from app.appletv import AppleTvClient
+from app.dependencies import get_request_tracker, get_settings
 from app.request_tracking import RequestTrackingMiddleware
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Application startup")
+    app.state.appletv = AppleTvClient(get_settings())
     yield
     # Teardown
     print("Application shutdown")
-    await dependencies.teardown_cached_appletv_connection()
+    await app.state.appletv.close()
 
 
 app = FastAPI(lifespan=lifespan)

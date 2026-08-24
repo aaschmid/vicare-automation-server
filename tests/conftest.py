@@ -1,19 +1,16 @@
 from collections import namedtuple
 from collections.abc import Sequence
 from typing import NamedTuple
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from _pytest.fixtures import SubRequest
 from fastapi import FastAPI
-from pyatv.interface import AppleTV
 from PyViCare import PyViCare
 
-import app.dependencies as _appletv_globals
+from app.appletv import AppleTvClient
 from app.dependencies import (
-    PORT_START,
-    AppleTvConnection,
-    get_appletv_connection,
+    get_appletv,
     get_request_tracker,
     get_settings,
     get_vicare,
@@ -40,18 +37,8 @@ def check_args(args) -> (FastAPI, dict):
     return app, setting_values
 
 
-@pytest.fixture(autouse=True)
-def _reset_appletv_connection_globals() -> None:
-    """Reset AppleTV connection cache + scan-cooldown between tests for isolation."""
-    _appletv_globals._cached_appletv_connection = None
-    _appletv_globals._last_scan_failed_at = None
-    yield
-    _appletv_globals._cached_appletv_connection = None
-    _appletv_globals._last_scan_failed_at = None
-
-
 class DependencyMocker(NamedTuple):
-    appletv_connection: AppleTvConnection
+    appletv: AppleTvClient
     settings: Settings
     vicare: MagicMock
 
@@ -75,10 +62,10 @@ def dependency_mocker(request: SubRequest) -> DependencyMocker:
     vicare: PyViCare = MagicMock()
     app.dependency_overrides[get_vicare] = lambda: vicare
 
-    appletv: AppleTV = MagicMock()
-    app.dependency_overrides[get_appletv_connection] = lambda: AppleTvConnection(
-        appletv, settings.appletv_host, PORT_START + 1
-    )
+    appletv: AppleTvClient = MagicMock()
+    appletv.system_status = AsyncMock()
+    appletv.connection_info = MagicMock(return_value={"host": "192.168.1.100", "port": 49153, "status": "connected"})
+    app.dependency_overrides[get_appletv] = lambda: appletv
 
     return DependencyMocker(appletv, settings, vicare)
 

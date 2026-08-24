@@ -22,3 +22,22 @@ This is currently done manually with the following steps:
 * Remove current config: `rm ~/.pyatv.conf`
 * Start Pairing with `uv run atvremote wizard --protocol companion --remote-name "atvremote" --verbose`
 * Look up identifier and credentials in `~/.pyatv.conf`
+
+# AppleTV status endpoint
+
+`GET /appletv` returns the current AppleTV system status:
+
+```json
+{
+  "active": 1,
+  "atv": {"host": "192.168.1.100", "port": 49153, "status": "connected"},
+  "idle": 0,
+  "state": "awake",
+  "screensaver": 0
+}
+```
+
+`state` is one of `awake`, `screensaver`, `idle`, `asleep`, `unknown`. `active` is `1` unless
+the state is `asleep` or `unknown`. `idle` and `screensaver` are `1` when the state matches.
+The connection is re-established transparently on connection loss; if the device is
+unreachable the endpoint responds with `503`.
